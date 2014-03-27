@@ -1,0 +1,13 @@
+ipch/
+res/
+build/VC100/Debug/
+build/VC100/Release/
+build/VC100/x64/
+bin/
+build/VC100/*.user
+
+*.opensdf
+*.sdf
+*.suo
+*.bat
+*
