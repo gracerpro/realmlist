@@ -22,3 +22,9 @@ TCHAR* ToDirectoryName(TCHAR* szDir) {
 bool IsFile(const TCHAR* file) {
 	return GetFileAttributes(file) != -1;
 }
+
+bool IsDir(const TCHAR* file) {
+	DWORD res = GetFileAttributes(file);
+
+	return (res != -1) && (res & FILE_ATTRIBUTE_DIRECTORY);
+}

@@ -21,6 +21,9 @@ bool WowClient::AddClientDir(const WowClientString szClientDir) {
 	if (m_clientDirList.end() != std::find(m_clientDirList.begin(), m_clientDirList.end(), szClientDir)) {
 		return false;
 	}
+	if (!IsDir(szClientDir.c_str())) {
+		return false;
+	}
 	m_clientDirList.push_back(szClientDir);
 
 	return true;
@@ -263,7 +266,10 @@ static bool WriteRealmlistToLocaleFile(WowClientString& clientDir, eWowVersion w
 	return true;
 }
 
-bool WowClient::SetCurrectRealmlist(size_t clientDirindex, const WowClientString realmlist) {
+bool WowClient::SetCurrectRealmlist(size_t clientDirindex, WowClientString locale, const WowClientString realmlist) {
+	if (realmlist.empty() || locale.empty()) {
+		return false;
+	}
 	if (clientDirindex >= m_clientDirList.size()) {
 		return false;
 	}
@@ -279,10 +285,7 @@ bool WowClient::SetCurrectRealmlist(size_t clientDirindex, const WowClientString
 		return false;
 	}
 
-	WriteRealmlistToLocaleFile(clientDir, wowVersion, realmlist, TEXT("ruRu"));
-	WriteRealmlistToLocaleFile(clientDir, wowVersion, realmlist, TEXT("enGb"));
-
-	return true;
+	return WriteRealmlistToLocaleFile(clientDir, wowVersion, realmlist, locale);
 }
 
 void WowClient::SetSelectedClientDir(size_t index) {

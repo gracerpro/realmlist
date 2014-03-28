@@ -12,3 +12,4 @@ bool IsDirectory(const TCHAR* szDir);
 TCHAR* ToDirectoryName(TCHAR* szDir);
 
 bool IsFile(const TCHAR* file);
+bool IsDir(const TCHAR* file);

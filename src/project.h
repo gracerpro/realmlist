@@ -57,7 +57,7 @@ public:
 	bool DelRealmlist(const WowClientString& realmlist);
 	void DelAllRealmlist();
 	bool ChangeRealmlist(const WowClientString realmlistName, stRealmlist& realmlistNew);
-	bool SetCurrectRealmlist(size_t indexClientDir, const WowClientString realmlist);
+	bool SetCurrectRealmlist(size_t indexClientDir, WowClientString locale, const WowClientString realmlist);
 
 	//int LoadLocaleRealmlist();
 	int LoadLocaleRealmlist(LocaleRealmlistList& list, size_t clientDirIndex);

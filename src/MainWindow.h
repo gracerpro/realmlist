@@ -1,6 +1,7 @@
 #pragma once
 
 #include "project.h"
+#include "tooltip.h"
 #include <Windows.h>
 
 class MainWindow {
@@ -30,6 +31,8 @@ protected:
 	void OnChangeRealmlist();
 	void OnSetCurrentRealmlist();
 
+	void OnHelpAbout();
+
 	void OnComboboxClientDirChangeSel();
 	void OnRealmlistLviChangeSel();
 
@@ -38,6 +41,7 @@ protected:
 private:
 	HWND m_hWnd;
 	WowClient m_project;
+	Tooltip   m_tooltip;
 
 	int GetSelectedRealmlist(TCHAR* realmlist, size_t bufferSize);
 
