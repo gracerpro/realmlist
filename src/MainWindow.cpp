@@ -1,3 +1,4 @@
+#include "Application.h"
 #include "MainWindow.h"
 #include "resource.h"
 #include "global.h"
@@ -6,12 +7,14 @@
 #include <CommCtrl.h>
 #include <tchar.h>
 
+extern Application g_App;
+
 static MainWindow* g_MainWindow;
 
 BOOL MainDlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 
-static inline LRESULT GetSelectedIndexLvi(HWND hwndLvi) {
+static inline INT_PTR GetSelectedIndexLvi(HWND hwndLvi) {
 	return SendMessage(hwndLvi, LVM_GETNEXTITEM, -1, LVNI_SELECTED);
 }
 
@@ -50,10 +53,11 @@ BOOL MainDlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 		g_MainWindow->OnCommand(id, notifyCode, hwndFrom);
 		return TRUE;
 	case WM_NOTIFY:
-		g_MainWindow->OnNotify(wParam, (LPNMHDR)lParam);
+		g_MainWindow->OnNotify((int)wParam, (LPNMHDR)lParam);
 		break;
 	case WM_SIZE:
-		int cx, cy, flags;
+		int cx, cy;
+		INT_PTR flags;
 
 		cx = LOWORD(lParam);
 		cy = HIWORD(lParam);
@@ -124,15 +128,28 @@ void MainWindow::OnClose() {
 }
 
 void MainWindow::OnDestroy() {
+	Settings settings;
+
+	// save selected client dir
+//	settings.SetParam(TEXT("selected_client_dir"), TEXT(""));
+	// save selected realmlist
+//	settings.SetParam(TEXT("selected_realmlist"), TEXT(""));
+
 	m_project.Save();
+
 	PostQuitMessage(0);
 }
 
-void MainWindow::OnSize(int cx, int cy, int flags) {
+void MainWindow::OnSize(int cx, int cy, INT_PTR flags) {
 	RECT rc;
+	POINT pt;
 	HWND hwndLviLocale = GetDlgItem(m_hWnd, IDC_LSV_CLIENT);
 	GetWindowRect(hwndLviLocale, &rc);
-	MoveWindow(hwndLviLocale, 0, 50, cx, rc.bottom - rc.top, TRUE);
+	pt.x = rc.left;
+	pt.y = rc.top;
+	int localeHeight = rc.bottom - rc.top;
+	ScreenToClient(m_hWnd, &pt);
+	MoveWindow(hwndLviLocale, 0, pt.y, cx, localeHeight, TRUE);
 
 	HWND hwndCbCLientDir = GetDlgItem(m_hWnd, IDC_CB_CLIENT_DIR);
 	GetWindowRect(hwndCbCLientDir, &rc);
@@ -150,7 +167,7 @@ void MainWindow::OnSize(int cx, int cy, int flags) {
 	MoveWindow(hwndBtnFindClientDir, cx - border - (margin + btnWidth), border, btnWidth, btnHeight, TRUE);*/
 
 	HWND hwndLviRealmlist = GetDlgItem(m_hWnd, IDC_LSV_REALMLIST);
-	MoveWindow(hwndLviRealmlist, 0, 200, cx, cy - 120, TRUE);
+	MoveWindow(hwndLviRealmlist, 0, 230, cx, cy - 120, TRUE);
 }
 
 int MainWindow::MessageBox(const TCHAR* message, int flags) {
@@ -178,17 +195,16 @@ static BOOL LoadCurrectClientDir(TCHAR* szClientPath, int size) {
 }
 
 void MainWindow::OnInitDialog(LPARAM param) {
-	LV_ITEM item = {0};
 	LV_COLUMN col = {0};
 	HWND hwndLvi = GetDlgItem(m_hWnd, IDC_LSV_REALMLIST);
 
 	col.mask = LVCF_TEXT | LVCF_WIDTH;
 	col.cx = 200;
 	col.pszText = TEXT("Реалмлист");
-	col.cchTextMax = _tcslen(col.pszText);
+	col.cchTextMax = static_cast<int>(_tcslen(col.pszText));
 	ListView_InsertColumn(hwndLvi, 0, &col);
 	col.pszText = TEXT("Описание (сервер)");
-	col.cchTextMax = _tcslen(col.pszText);
+	col.cchTextMax = static_cast<int>(_tcslen(col.pszText));
 	ListView_InsertColumn(hwndLvi, 1, &col);
 
 	ListView_SetExtendedListViewStyle(hwndLvi, LVS_EX_FULLROWSELECT | LVS_EX_SINGLEROW);
@@ -196,28 +212,26 @@ void MainWindow::OnInitDialog(LPARAM param) {
 	HWND hwndLviClient = GetDlgItem(m_hWnd, IDC_LSV_CLIENT);
 	col.cx = 100;
 	col.pszText = TEXT("Локализация");
-	col.cchTextMax = _tcslen(col.pszText);
+	col.cchTextMax = static_cast<int>(_tcslen(col.pszText));
 	ListView_InsertColumn(hwndLviClient, 0, &col);
 	col.cx = 200;
 	col.pszText = TEXT("Реалмлист");
-	col.cchTextMax = _tcslen(col.pszText);
+	col.cchTextMax = static_cast<int>(_tcslen(col.pszText));
 	ListView_InsertColumn(hwndLviClient, 1, &col);
 
 	ListView_SetExtendedListViewStyle(hwndLviClient, LVS_EX_FULLROWSELECT | LVS_EX_SINGLEROW);
 
 	TCHAR buf[1024];
+	LV_ITEM item = {0};
 
 	m_project.LoadRealmlist();
 	RealmlistList realmlistList = m_project.GetRealmlistList();
-	RealmlistList::const_iterator iter = realmlistList.begin();
-	int i = 0;
-	for ( ; iter != realmlistList.end(); ++iter, ++i) {
-		LV_ITEM item = {0};
-		const stRealmlist& realmlist = *iter;
+	for (size_t i = 0; i < realmlistList.size(); ++i) {
+		const stRealmlist& realmlist = realmlistList[i];
 
 		item.pszText = const_cast<TCHAR*>(realmlist.name.c_str());
 		item.mask = LVIF_TEXT;
-		item.iItem = i;
+		item.iItem = static_cast<int>(i);
 		LRESULT index = ListView_InsertItem(hwndLvi, &item);
 		TCHAR* pDescr = const_cast<TCHAR*>(realmlist.description.c_str());
 		ListView_SetItemText(hwndLvi, index, 1, pDescr);
@@ -230,7 +244,7 @@ void MainWindow::OnInitDialog(LPARAM param) {
 	m_project.LoadClientDirList();
 	ClientDirList list = m_project.GetClientPathList();
 	for (ClientDirList::const_iterator iter = list.begin(); iter != list.end(); ++iter) {
-		const WowClientString& clientPath  = *iter;
+		const AppString& clientPath  = *iter;
 		AddToClientDirCb(clientPath.c_str());
 	}
 	LoadCurrectClientDir(buf, 1024);
@@ -251,7 +265,7 @@ void MainWindow::OnInitDialog(LPARAM param) {
 	m_tooltip.AddTooltip(IDC_REALMLIST_CUR, m_hWnd, TEXT("Установить реалмлист в выбранном клиенте и локализации\nЗаписать в файл realmlist.wpf"));
 	m_tooltip.AddTooltip(IDC_REALMLIST_ADD, m_hWnd, TEXT("Добавить реалмлист в список"));
 	m_tooltip.AddTooltip(IDC_REALMLIST_DEL, m_hWnd, TEXT("Удалить реалмлист из списка"));
-	m_tooltip.AddTooltip(IDC_REALMLIST_SET, m_hWnd, TEXT("Изменить реалмлист"));
+	m_tooltip.AddTooltip(IDC_REALMLIST_SET, m_hWnd, TEXT("Изменить название реалмлиста"));
 
 	m_tooltip.Activate();
 }
@@ -267,17 +281,19 @@ void MainWindow::OnAddClientDir() {
 	else {
 		LoadCurrectClientDir(buf, 1024);
 	}
-
-	if (!m_project.AddClientDir(buf)) {
+	TCHAR* pBuf = trim(buf);
+	SetDlgItemText(m_hWnd, IDC_CB_CLIENT_DIR, pBuf);
+	if (!m_project.AddClientDir(pBuf)) {
 		MessageBox(TEXT("Не удалось добавить путь к клиенту WoW в список.\nДиректория не существует или она уже включена в список"));
 		return;
 	}
-	AddToClientDirCb(buf);
+	AddToClientDirCb(pBuf);
 }
 
 void MainWindow::OnDelClientDir() {
 	LRESULT index = SendDlgItemMessage(m_hWnd, IDC_CB_CLIENT_DIR, CB_GETCURSEL, 0, 0);
 	if (index == CB_ERR) {
+		MessageBox(TEXT("Не выбран путь к клиенту"));
 		return;
 	}
 	if (m_project.DelClientDir(index)) {
@@ -347,7 +363,11 @@ void MainWindow::OnAddRealmlist() {
 void MainWindow::OnDelRealmlist() {
 	TCHAR realmlist[1024];
 
-	int index = GetSelectedRealmlist(realmlist, 1024);
+	INT_PTR index = GetSelectedRealmlist(realmlist, 1024);
+	if (index == -1) {
+		MessageBox(TEXT("Не выбран реалмлист"));
+		return;
+	}
 	if (m_project.DelRealmlist(realmlist)) {
 		HWND hwndLvi = GetDlgItem(m_hWnd, IDC_LSV_REALMLIST);
 		ListView_DeleteItem(hwndLvi, index);
@@ -377,7 +397,7 @@ void MainWindow::OnChangeRealmlist() {
 	HWND hwndLvi = GetDlgItem(m_hWnd, IDC_LSV_REALMLIST);
 	LV_ITEM item = {0};
 
-	int index = GetSelectedRealmlist(realmlistName, 255);
+	INT_PTR index = GetSelectedRealmlist(realmlistName, 255);
 	if (index == -1) {
 		MessageBox(TEXT("Выберите реалмлист"));
 		return;
@@ -394,12 +414,16 @@ void MainWindow::OnChangeRealmlist() {
 }
 
 void MainWindow::OnSetCurrentRealmlist() {
-	TCHAR realmlist[200];
 	HWND hwndLviRealmlist = GetDlgItem(m_hWnd, IDC_LSV_REALMLIST);
-
-	int index = GetSelectedIndexLvi(hwndLviRealmlist);
-	if (index == -1) {
+	LRESULT realmlistIndex = GetSelectedIndexLvi(hwndLviRealmlist);
+	if (realmlistIndex == -1) {
 		MessageBox(TEXT("Выберите реалмлист"));
+		return;
+	}
+	HWND hwndLviLocale = GetDlgItem(m_hWnd, IDC_LSV_CLIENT);
+	LRESULT localeIndex = GetSelectedIndexLvi(hwndLviLocale);
+	if (localeIndex == -1) {
+		MessageBox(TEXT("Выберите локализацию клиента"));
 		return;
 	}
 	LRESULT selectedClientWowDir = SendDlgItemMessage(m_hWnd, IDC_CB_CLIENT_DIR, CB_GETCURSEL, 0, 0);
@@ -407,17 +431,17 @@ void MainWindow::OnSetCurrentRealmlist() {
 		MessageBox(TEXT("Не выбран путь к клиенту WoW"));
 		return;
 	}
-	HWND hwndLviLocale = GetDlgItem(m_hWnd, IDC_LSV_CLIENT);
-	int indexLocale = GetSelectedIndexLvi(hwndLviLocale);
-	TCHAR locale[100];
-	ListView_GetItemText(hwndLviLocale, indexLocale, 0, locale, 100);
 
-	ListView_GetItemText(hwndLviRealmlist, index, 0, realmlist, 200);
-	m_project.SetCurrectRealmlist(selectedClientWowDir, locale, realmlist);
+	TCHAR realmlist[200], locale[100];
+	ListView_GetItemText(hwndLviLocale, localeIndex, 0, locale, 100);
+	ListView_GetItemText(hwndLviRealmlist, realmlistIndex, 0, realmlist, 200);
+	if (m_project.SetCurrectRealmlist(selectedClientWowDir, locale, realmlist)) {
+		ListView_SetItemText(hwndLviLocale, localeIndex, 1, realmlist);
+	}
 }
 
 void MainWindow::OnComboboxClientDirChangeSel() {
-	int index = SendDlgItemMessage(m_hWnd, IDC_CB_CLIENT_DIR, CB_GETCURSEL, 0, 0);
+	INT_PTR index = SendDlgItemMessage(m_hWnd, IDC_CB_CLIENT_DIR, CB_GETCURSEL, 0, 0);
 	m_project.SetSelectedClientDir(index);
 
 	HWND hwndLvi = GetDlgItem(m_hWnd, IDC_LSV_CLIENT);
@@ -433,17 +457,17 @@ void MainWindow::OnComboboxClientDirChangeSel() {
 
 		item.pszText = const_cast<TCHAR*>(cocaleRealmlist.locale.c_str());
 		item.mask = LVIF_TEXT;
-		item.iItem = i;
+		item.iItem = static_cast<int>(i);
 		LRESULT index = ListView_InsertItem(hwndLvi, &item);
 		TCHAR* pDescr = const_cast<TCHAR*>(cocaleRealmlist.currentRealmlist.c_str());
 		ListView_SetItemText(hwndLvi, index, 1, pDescr);
 	}
 }
 
-int MainWindow::GetSelectedRealmlist(TCHAR* realmlist, size_t bufferSize) {
+INT_PTR MainWindow::GetSelectedRealmlist(TCHAR* realmlist, int bufferSize) {
 	realmlist[0] = 0;
 	HWND hwndLvi = GetDlgItem(m_hWnd, IDC_LSV_REALMLIST);
-	int index = GetSelectedIndexLvi(hwndLvi);
+	INT_PTR index = GetSelectedIndexLvi(hwndLvi);
 	if (index < 0) {
 		return -1;
 	}
@@ -457,7 +481,7 @@ void MainWindow::OnRealmlistLviChangeSel() {
 	TCHAR description[200];
 	HWND hwndLvi = GetDlgItem(m_hWnd, IDC_LSV_REALMLIST);
 
-	int index = GetSelectedIndexLvi(hwndLvi);
+	INT_PTR index = GetSelectedIndexLvi(hwndLvi);
 	if (index < 0) {
 		return;
 	}

@@ -1,7 +1,7 @@
 #pragma once
 
-#include <Windows.h>
 #include "MainWindow.h"
+#include <Windows.h>
 
 class Application {
 public:

@@ -1,9 +1,8 @@
 #pragma once
 
-#include "Application.h"
+#include <windows.h>
+#include <tchar.h>
 #include <string>
-
-extern Application g_App;
 
 // TODO: apply to program
 typedef std::basic_string<TCHAR> AppString;
@@ -13,3 +12,5 @@ TCHAR* ToDirectoryName(TCHAR* szDir);
 
 bool IsFile(const TCHAR* file);
 bool IsDir(const TCHAR* file);
+
+TCHAR* trim(TCHAR* str);

@@ -19,7 +19,7 @@ protected:
 	void OnNotify(int idCtrl, LPNMHDR lpNmhdr);
 	void OnClose();
 	void OnDestroy();
-	void OnSize(int cx, int cy, int flags);
+	void OnSize(int cx, int cy, INT_PTR flags);
 
 	void OnAddClientDir();
 	void OnDelClientDir();
@@ -43,7 +43,7 @@ private:
 	WowClient m_project;
 	Tooltip   m_tooltip;
 
-	int GetSelectedRealmlist(TCHAR* realmlist, size_t bufferSize);
+	INT_PTR GetSelectedRealmlist(TCHAR* realmlist, int bufferSize);
 
 	// Truncate the file path to file dir
 	bool AddToClientDirCb(const TCHAR* szDir);

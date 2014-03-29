@@ -25,6 +25,6 @@ static BOOL WINAPI AboutWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 	return FALSE;
 }
 
-int AboutWindow::DoModal() {
-	return DialogBox(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_ABOUT), m_hwndParent, AboutWindowProc);
+INT_PTR AboutWindow::DoModal() {
+	return DialogBox(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_ABOUT), m_hwndParent, (DLGPROC)AboutWindowProc);
 }

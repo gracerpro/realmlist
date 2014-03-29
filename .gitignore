@@ -4,6 +4,7 @@ build/VC100/Debug/
 build/VC100/Release/
 build/VC100/x64/
 bin/
+bin64/
 build/VC100/*.user
 
 *.opensdf

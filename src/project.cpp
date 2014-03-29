@@ -14,7 +14,7 @@ WowClient::~WowClient() {
 
 }
 
-bool WowClient::AddClientDir(const WowClientString szClientDir) {
+bool WowClient::AddClientDir(const AppString szClientDir) {
 	if (szClientDir.empty()) {
 		return false;
 	}
@@ -96,7 +96,7 @@ void WowClient::SaveClientDirList() {
 
 	ClientDirList::const_iterator iter = m_clientDirList.begin();
 	for ( ; iter != m_clientDirList.end(); ++iter) {
-		const WowClientString& dir = *iter;
+		const AppString& dir = *iter;
 
 		ostream << dir << '\n';
 	}
@@ -104,7 +104,7 @@ void WowClient::SaveClientDirList() {
 	ostream.close();
 }
 
-int WowClient::LoadRealmlist() {
+size_t WowClient::LoadRealmlist() {
 	std::basic_ifstream<TCHAR> stream(GetRealmlistFilePath());
 
 	if (stream.is_open()) {
@@ -134,7 +134,7 @@ int WowClient::LoadRealmlist() {
 	return m_realmlistList.size();
 }
 
-int WowClient::LoadClientDirList() {
+size_t WowClient::LoadClientDirList() {
 	std::basic_ifstream<TCHAR> stream(GetClientDirFilePath());
 
 	if (stream.is_open()) {
@@ -164,7 +164,7 @@ bool WowClient::AddRealmlist(const stRealmlist& realmlist) {
 	return true;
 }
 
-bool WowClient::DelRealmlist(const WowClientString& realmlist) {
+bool WowClient::DelRealmlist(const AppString& realmlist) {
 	RealmlistList::const_iterator findIter = std::find(m_realmlistList.begin(), m_realmlistList.end(), realmlist);
 	if (findIter == m_realmlistList.end()) {
 		return false;
@@ -178,13 +178,22 @@ void WowClient::DelAllRealmlist() {
 	m_realmlistList.clear();
 }
 
-bool WowClient::ChangeRealmlist(const WowClientString realmlistName, stRealmlist& realmlistNew) {
+bool WowClient::ChangeRealmlist(const AppString realmlistName, stRealmlist& realmlistNew) {
 	RealmlistList::iterator findIter = std::find(m_realmlistList.begin(), m_realmlistList.end(), realmlistName);
 	if (findIter == m_realmlistList.end()) {
 		return false;
 	}
 	stRealmlist& changedRealmlist = *findIter;
 
+	if (realmlistName == realmlistNew.name) {
+		changedRealmlist.description = realmlistNew.description;
+		return true;
+	}
+
+	RealmlistList::iterator existedRealmlistIter = std::find(m_realmlistList.begin(), m_realmlistList.end(), realmlistNew);
+	if (existedRealmlistIter != m_realmlistList.end()) {
+		return false;
+	}
 	changedRealmlist.name = realmlistNew.name;
 	changedRealmlist.description = realmlistNew.description;
 
@@ -198,7 +207,7 @@ eWowVersion WowClient::GetWowVersion() const {
 
 	eWowVersion res = WOW_VERSION_NULL;
 
-	WowClientString exeFile = m_clientDirList[m_selectedClientDirIndex] + TEXT("WoW.exe");
+	AppString exeFile = m_clientDirList[m_selectedClientDirIndex] + TEXT("WoW.exe");
 	std::basic_ifstream<TCHAR> stream(exeFile.c_str(), std::ios::binary | std::ios::ate);
 	if (stream.is_open()) {
 		std::streamoff size = stream.tellg();
@@ -228,7 +237,7 @@ eWowVersion WowClient::GetWowVersion() const {
 	return res;
 }
 
-static void WriteRealmlistToFile(WowClientString fileName, WowClientString& realmlistData) {
+static void WriteRealmlistToFile(AppString fileName, AppString& realmlistData) {
 	std::basic_ofstream<TCHAR> stream(fileName.c_str(), std::ios::out | std::ios::trunc);
 	if (stream.is_open()) {
 		stream << realmlistData;
@@ -236,11 +245,11 @@ static void WriteRealmlistToFile(WowClientString fileName, WowClientString& real
 	}
 }
 
-static bool WriteRealmlistToLocaleFile(WowClientString& clientDir, eWowVersion wowVersion,
-	WowClientString realmlist, WowClientString locale) {
+static bool WriteRealmlistToLocaleFile(AppString& clientDir, eWowVersion wowVersion,
+	AppString realmlist, AppString locale) {
 
-	WowClientString realmlistFileName = clientDir + TEXT("Data\\") + locale + TEXT("\\realmlist.wtf");
-	WowClientString fileExe, data;
+	AppString realmlistFileName = clientDir + TEXT("Data\\") + locale + TEXT("\\realmlist.wtf");
+	AppString fileExe, data;
 
 	if (!IsFile(realmlistFileName.c_str())) {
 		return false;
@@ -266,7 +275,7 @@ static bool WriteRealmlistToLocaleFile(WowClientString& clientDir, eWowVersion w
 	return true;
 }
 
-bool WowClient::SetCurrectRealmlist(size_t clientDirindex, WowClientString locale, const WowClientString realmlist) {
+bool WowClient::SetCurrectRealmlist(size_t clientDirindex, AppString locale, const AppString realmlist) {
 	if (realmlist.empty() || locale.empty()) {
 		return false;
 	}
@@ -278,7 +287,7 @@ bool WowClient::SetCurrectRealmlist(size_t clientDirindex, WowClientString local
 		return false;
 	}
 
-	WowClientString& clientDir = m_clientDirList[clientDirindex];
+	AppString& clientDir = m_clientDirList[clientDirindex];
 
 	eWowVersion wowVersion = GetWowVersion();
 	if (wowVersion == WOW_VERSION_NULL) {
@@ -293,67 +302,59 @@ void WowClient::SetSelectedClientDir(size_t index) {
 }
 
 void WowClient::Save() {
-	Settings settings;
-
-	// save selected client dir
-//	settings.SaveSelectedClientDir();
-	// save selected realmlist
-//	settings.SaveSelectedRealmlist();
-
 	SaveClientDirList();
 	SaveRealmlist();
 }
-/*
-int WowClient::LoadLocaleRealmlist() {
-	int count = 0;
 
-	static WowClientString arrLocaleName[2] = {
-		TEXT("ruRu"),
-		TEXT("enEn")
-	};
+static AppString GetRealmlistFromFile(AppString& file) {
+	std::basic_ifstream<TCHAR> stream(file, std::ios::in);
+	AppString res;
 
-	ClientDirList::const_iterator iterDir = m_clientDirList.begin();
-	for ( ; iterDir != m_clientDirList.end(); ++iterDir) {
-		const WowClientString& dir = *iterDir;
-		for (size_t i = 0; i < sizeof(arrLocaleName) /  sizeof(arrLocaleName[0]); ++i) {
-			WowClientString& locale = arrLocaleName[i];
-			WowClientString fileRealmlist = dir + TEXT("Data\\") + locale + TEXT("\\realmlist.wpf");
-			if (!IsFile(fileRealmlist.c_str())) {
-				continue;
+	if (stream.good()) {
+		TCHAR line[512];
+
+		while (stream.getline(line, 512)) {
+			const TCHAR setrealmlist[] = TEXT("set realmlist");
+			const size_t setrealmlistLen = (sizeof(setrealmlist) / sizeof(TCHAR)) - 1;
+			if (!_tcsncmp(line, setrealmlist, setrealmlistLen)) {
+				res = trim(line + setrealmlistLen);
 			}
-
-			stClientRealmlist clietntRealmlist;
-			clietntRealmlist.locale = locale;
-			clietntRealmlist.currentRealmlist = TEXT("null");
 		}
-
 	}
 
-	return count;
-}*/
+	return res;
+}
 
-int WowClient::LoadLocaleRealmlist(LocaleRealmlistList& list, size_t clientDirIndex) {
-	static WowClientString arrLocaleName[2] = {
-		TEXT("ruRu"),
-		TEXT("enEn")
+size_t WowClient::LoadLocaleRealmlist(LocaleRealmlistList& list, size_t clientDirIndex) {
+	static AppString arrLocaleName[] = {
+		TEXT("deDE"),
+		TEXT("enUS"),
+		TEXT("esES"),
+		TEXT("esMX"),
+		TEXT("frFR"),
+		TEXT("ptBR"),
+		TEXT("ptPT"),
+		TEXT("ruRU"),
+		TEXT("zhCN"),
+		TEXT("zhTW")
 	};
 
 	if (clientDirIndex >= m_clientDirList.size()) {
 		return 0;
 	}
-	const WowClientString& dir = m_clientDirList[clientDirIndex];
+	const AppString& dir = m_clientDirList[clientDirIndex];
 
 	list.clear();
 	for (size_t i = 0; i < sizeof(arrLocaleName) /  sizeof(arrLocaleName[0]); ++i) {
-		WowClientString& locale = arrLocaleName[i];
-		WowClientString fileRealmlist = dir + TEXT("Data\\") + locale + TEXT("\\realmlist.wtf");
+		AppString& locale = arrLocaleName[i];
+		AppString fileRealmlist = dir + TEXT("Data\\") + locale + TEXT("\\realmlist.wtf");
 		if (!IsFile(fileRealmlist.c_str())) {
 			continue;
 		}
 
 		stClientRealmlist clietntRealmlist;
 		clietntRealmlist.locale = locale;
-		clietntRealmlist.currentRealmlist = TEXT("null");
+		clietntRealmlist.currentRealmlist = GetRealmlistFromFile(fileRealmlist);
 
 		list.push_back(clietntRealmlist);
 	}

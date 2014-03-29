@@ -20,7 +20,8 @@ bool Settings::SetParam(const SettingString name, const SettingString value) {
 		0, KEY_WRITE, NULL, &hKey, &dwDisposition)) {
 
 		const BYTE* data = reinterpret_cast<const BYTE*>(value.c_str());
-		if (ERROR_SUCCESS == RegSetValueEx(hKey, name.c_str(), 0, REG_SZ, data, name.size())) {
+		DWORD cbData = static_cast<DWORD>(name.size());
+		if (ERROR_SUCCESS == RegSetValueEx(hKey, name.c_str(), 0, REG_SZ, data, cbData)) {
 			return true;
 		}
 	}
@@ -36,7 +37,8 @@ bool Settings::GetParam(const SettingString name, SettingString& value, SettingS
 		0, KEY_READ, NULL, &hKey, &dwDisposition)) {
 
 		const BYTE* data = reinterpret_cast<const BYTE*>(value.c_str());
-		if (ERROR_SUCCESS == RegSetValueEx(hKey, name.c_str(), 0, REG_SZ, data, name.size())) {
+		DWORD cbData = static_cast<DWORD>(name.size());
+		if (ERROR_SUCCESS == RegSetValueEx(hKey, name.c_str(), 0, REG_SZ, data, cbData)) {
 			return true;
 		}
 	}

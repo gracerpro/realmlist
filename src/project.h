@@ -1,27 +1,26 @@
 #pragma once
 
+#include "global.h"
 #include <string>
 #include <array>
 #include <vector>
 #include <tchar.h>
 
-typedef std::basic_string<TCHAR> WowClientString;
-
 struct stRealmlist {
-	WowClientString name;
-	WowClientString description;
+	AppString name;
+	AppString description;
 
 	bool operator == (const stRealmlist realmlist) const {
 		return name == realmlist.name;
 	}
-	bool operator == (WowClientString realmlist) const {
+	bool operator == (AppString realmlist) const {
 		return name == realmlist;
 	}
 };
 
 struct stClientRealmlist {
-	WowClientString locale;
-	WowClientString currentRealmlist;
+	AppString locale;
+	AppString currentRealmlist;
 
 	bool operator == (const stClientRealmlist realmlist) const {
 		return (currentRealmlist == realmlist.currentRealmlist) && (locale == realmlist.locale);
@@ -34,7 +33,7 @@ enum eWowVersion {
 	WOW_VERSION_434
 };
 
-typedef std::vector<WowClientString>   ClientDirList;
+typedef std::vector<AppString>   ClientDirList;
 typedef std::vector<stRealmlist>       RealmlistList;
 typedef std::vector<stClientRealmlist> LocaleRealmlistList;
 
@@ -45,22 +44,21 @@ public:
 
 	void Save();
 
-	int LoadClientDirList();
+	size_t LoadClientDirList();
 	void SaveClientDirList();
-	bool AddClientDir(const WowClientString szClientDir);
+	bool AddClientDir(const AppString szClientDir);
 	bool DelClientDir(size_t index);
 	void SetSelectedClientDir(size_t index);
 
-	int LoadRealmlist();
+	size_t LoadRealmlist();
 	void SaveRealmlist();
 	bool AddRealmlist(const stRealmlist& realmlist);
-	bool DelRealmlist(const WowClientString& realmlist);
+	bool DelRealmlist(const AppString& realmlist);
 	void DelAllRealmlist();
-	bool ChangeRealmlist(const WowClientString realmlistName, stRealmlist& realmlistNew);
-	bool SetCurrectRealmlist(size_t indexClientDir, WowClientString locale, const WowClientString realmlist);
+	bool ChangeRealmlist(const AppString realmlistName, stRealmlist& realmlistNew);
+	bool SetCurrectRealmlist(size_t indexClientDir, AppString locale, const AppString realmlist);
 
-	//int LoadLocaleRealmlist();
-	int LoadLocaleRealmlist(LocaleRealmlistList& list, size_t clientDirIndex);
+	size_t LoadLocaleRealmlist(LocaleRealmlistList& list, size_t clientDirIndex);
 
 	eWowVersion GetWowVersion() const;
 

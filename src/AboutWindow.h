@@ -5,7 +5,7 @@ public:
 	AboutWindow(HWND hwndParent);
 	~AboutWindow();
 
-	int DoModal();
+	INT_PTR DoModal();
 
 private:
 	HWND m_hwndParent;

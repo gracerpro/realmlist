@@ -28,3 +28,19 @@ bool IsDir(const TCHAR* file) {
 
 	return (res != -1) && (res & FILE_ATTRIBUTE_DIRECTORY);
 }
+
+TCHAR* trim(TCHAR* str) {
+	TCHAR* res = str;
+
+	while (*res && (*res == ' ' || *res == '\n' || *res == '\t' || *res == '\r')) {
+		++res;
+	}
+
+	TCHAR *pEnd = &res[_tcslen(res) - 1];
+	while (pEnd > res && (*pEnd == ' ' || *pEnd == '\n' || *pEnd == '\t' || *pEnd == '\r')) {
+		--pEnd;
+	}
+	*(pEnd + 1) = 0;
+
+	return res;
+}
