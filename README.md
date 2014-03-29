@@ -12,9 +12,9 @@ This programm allow manage of realmlists, quickly switch between different realm
 
 ## Copyright
 
-Copiright (C) 2014, SlaFF
+Copiright (C) 2014 SlaFF
 
 ## License
 
-[LICENSE](LICENSE)
+[LICENSE GNU GPL v.3](LICENSE)
 
