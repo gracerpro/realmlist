@@ -38,6 +38,8 @@ protected:
 	void OnDestroy();
 	void OnSize(int cx, int cy, INT_PTR flags);
 
+	void OnFileRunWow();
+
 	void OnAddClientDir();
 	void OnDelClientDir();
 	void OnFindClientDir();

@@ -31,6 +31,7 @@
 #define IDC_LSV_CLIENT            1005
 
 #define IDC_FILE_EXIT             10000
+#define IDC_FILE_RUN_WOW          10001
 
 #define IDC_REALMLIST_ADD         10100
 #define IDC_REALMLIST_DEL         10101

@@ -128,6 +128,9 @@ void MainWindow::OnCommand(int id, int notifyCode, HWND hwndFrom) {
 	case IDC_FILE_EXIT:
 		OnClose();
 		break;
+	case IDC_FILE_RUN_WOW:
+		OnFileRunWow();
+		break;
 	}
 }
 
@@ -172,16 +175,9 @@ void MainWindow::OnSize(int cx, int cy, INT_PTR flags) {
 	GetWindowRect(hwndCbCLientDir, &rc);
 	MoveWindow(hwndCbCLientDir, 0, 28, cx, rc.bottom - rc.top, TRUE);
 
-/*	const int border = 5;
-	const int margin = 2;
-	const int btnWidth = 23;
-	const int btnHeight = 22;
-	static HWND hwndBtnAddClientDir = GetDlgItem(m_hWnd, IDC_BTN_ADD_CLIENT_DIR);
-	MoveWindow(hwndBtnAddClientDir, cx - border - 3 * (margin + btnWidth), border, btnWidth, btnHeight, TRUE);
-	static HWND hwndBtnDelClientDir = GetDlgItem(m_hWnd, IDC_BTN_DEL_CLIENT_DIR);
-	MoveWindow(hwndBtnDelClientDir, cx - border - 2 * (margin + btnWidth), border, btnWidth, btnHeight, TRUE);
-	static HWND hwndBtnFindClientDir = GetDlgItem(m_hWnd, IDC_BTN_FIND_CLIENT);
-	MoveWindow(hwndBtnFindClientDir, cx - border - (margin + btnWidth), border, btnWidth, btnHeight, TRUE);*/
+	HWND hwndBtnRunWow = GetDlgItem(m_hWnd, IDC_FILE_RUN_WOW);
+	GetWindowRect(hwndBtnRunWow, &rc);
+	MoveWindow(hwndBtnRunWow, cx - (rc.right - rc.left) - 2, 2, rc.right - rc.left, rc.bottom - rc.top, TRUE);
 
 	HWND hwndLviRealmlist = GetDlgItem(m_hWnd, IDC_LSV_REALMLIST);
 	MoveWindow(hwndLviRealmlist, 0, 230, cx, cy - 120, TRUE);
@@ -194,6 +190,7 @@ int MainWindow::MessageBox(const TCHAR* message, int flags) {
 static BOOL LoadCurrectClientDir(TCHAR* szClientPath, int size) {
 
 // win32:
+	// TODO:
 
 // win64: HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Blizzard Entertainment\World of Warcraft
 	szClientPath[0] = 0;
@@ -520,4 +517,27 @@ void MainWindow::OnHelpAbout() {
 	AboutWindow dlg(m_hWnd);
 
 	dlg.DoModal();
+}
+
+void MainWindow::OnFileRunWow() {
+	STARTUPINFO sti = {0};
+	PROCESS_INFORMATION pi = {0};
+	TCHAR wowExePath[MAX_PATH];
+
+	INT_PTR index = SendDlgItemMessage(m_hWnd, IDC_CB_CLIENT_DIR, CB_GETCURSEL, 0, 0);
+	if (index == -1) {
+		MessageBox(TEXT("Не выбран путь к клиенту"));
+		return;
+	}
+	SendDlgItemMessage(m_hWnd, IDC_CB_CLIENT_DIR, CB_GETLBTEXT, index, (LPARAM)wowExePath);
+	ToDirectoryName(wowExePath);
+
+	_tcscat_s(wowExePath, TEXT("WoW.exe"));
+
+	if (!CreateProcess(wowExePath, TEXT(""), NULL, NULL, FALSE, CREATE_DEFAULT_ERROR_MODE, NULL, NULL, &sti, &pi)) {
+		TCHAR message[MAX_PATH + 100];
+		_tcscpy_s(message, TEXT("Не удалось запустить WoW\n"));
+		_tcscat_s(message, wowExePath);
+		MessageBox(message, MB_ICONWARNING);
+	}
 }
