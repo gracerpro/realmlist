@@ -49,6 +49,9 @@
   <ItemGroup>
     <ResourceCompile Include="..\..\src\realmlist.rc" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\res\xpmanifest.xml" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{8560FF7E-CB21-4914-AFBC-FD17A63EF697}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
@@ -115,7 +118,8 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
     <OutDir>$(SolutionDir)\bin\</OutDir>
-    <GenerateManifest>true</GenerateManifest>
+    <GenerateManifest>false</GenerateManifest>
+    <EmbedManifest>false</EmbedManifest>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
@@ -153,8 +157,7 @@
       </AdditionalManifestDependencies>
     </Link>
     <Manifest>
-      <AdditionalManifestFiles>
-      </AdditionalManifestFiles>
+      <AdditionalManifestFiles>res/xpmanifest.xml %(AdditionalManifestFiles)</AdditionalManifestFiles>
     </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">

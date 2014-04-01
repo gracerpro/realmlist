@@ -71,4 +71,9 @@
       <Filter>Файлы ресурсов</Filter>
     </ResourceCompile>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\res\xpmanifest.xml">
+      <Filter>Файлы ресурсов</Filter>
+    </None>
+  </ItemGroup>
 </Project>

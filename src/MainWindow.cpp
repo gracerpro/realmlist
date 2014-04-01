@@ -179,6 +179,13 @@ void MainWindow::OnSize(int cx, int cy, INT_PTR flags) {
 	GetWindowRect(hwndBtnRunWow, &rc);
 	MoveWindow(hwndBtnRunWow, cx - (rc.right - rc.left) - 2, 2, rc.right - rc.left, rc.bottom - rc.top, TRUE);
 
+	HWND hwndEdtRealmlistDestr = GetDlgItem(m_hWnd, IDC_EDT_REALMLIST_DESCR);
+	GetWindowRect(hwndEdtRealmlistDestr, &rc);
+	pt.x = rc.left;
+	pt.y = rc.top;
+	ScreenToClient(m_hWnd, &pt);
+	MoveWindow(hwndEdtRealmlistDestr, pt.x, pt.y, cx - pt.x - 5, rc.bottom - rc.top, TRUE);
+
 	HWND hwndLviRealmlist = GetDlgItem(m_hWnd, IDC_LSV_REALMLIST);
 	MoveWindow(hwndLviRealmlist, 0, 230, cx, cy - 120, TRUE);
 }
@@ -281,7 +288,16 @@ void MainWindow::OnInitDialog(LPARAM param) {
 	m_tooltip.AddTooltip(IDC_REALMLIST_DEL, m_hWnd, TEXT("Удалить реалмлист из списка"));
 	m_tooltip.AddTooltip(IDC_REALMLIST_SET, m_hWnd, TEXT("Изменить название реалмлиста"));
 
+	m_tooltip.AddTooltip(IDC_FILE_RUN_WOW, m_hWnd, TEXT("Запустить WoW"));
+
 	m_tooltip.Activate();
+
+	HWND hwndBtnRunWow = GetDlgItem(m_hWnd, IDC_FILE_RUN_WOW);
+	HBITMAP hWowBitmap = LoadBitmap(g_App.GetInstance(), MAKEINTRESOURCE(IDR_BITMAP_WOW16));
+	SendMessage(hwndBtnRunWow, BM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hWowBitmap);
+
+	// Load locale title
+	// SetWindowText(title);
 }
 
 void MainWindow::OnAddClientDir() {

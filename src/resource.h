@@ -45,3 +45,6 @@
 #define IDC_FIND_CLIENT_DIR       10052
 
 #define IDC_HELP_ABOUT            10300
+
+
+#define IDR_BITMAP_WOW16          100
