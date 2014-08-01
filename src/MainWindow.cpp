@@ -398,6 +398,9 @@ void MainWindow::OnDelRealmlist() {
 		MessageBox(TEXT("Не выбран реалмлист"));
 		return;
 	}
+	if (IDOK != MessageBox(L"Подтвердите удаление", MB_OKCANCEL | MB_ICONINFORMATION)) {
+		return;
+	}
 	if (m_project.DelRealmlist(realmlist)) {
 		HWND hwndLvi = GetDlgItem(m_hWnd, IDC_LSV_REALMLIST);
 		ListView_DeleteItem(hwndLvi, index);
@@ -405,8 +408,10 @@ void MainWindow::OnDelRealmlist() {
 }
 
 void MainWindow::OnDelAllRealmlist() {
-	m_project.DelAllRealmlist();
-	SendDlgItemMessage(m_hWnd, IDC_LSV_REALMLIST, LVM_DELETEALLITEMS, 0, 0);
+	if (IDOK == MessageBox(L"Подтвердите удаление всех реалмлистов", MB_ICONQUESTION | MB_OKCANCEL)) {
+		m_project.DelAllRealmlist();
+		SendDlgItemMessage(m_hWnd, IDC_LSV_REALMLIST, LVM_DELETEALLITEMS, 0, 0);
+	}
 }
 
 void MainWindow::OnChangeRealmlist() {
