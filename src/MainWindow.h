@@ -42,7 +42,6 @@ protected:
 
 	void OnFileRunWow();
 
-	void OnAddClientDir();
 	void OnDelClientDir();
 	void OnFindClientDir();
 

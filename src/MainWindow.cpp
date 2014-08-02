@@ -104,9 +104,6 @@ void MainWindow::OnCommand(int id, int notifyCode, HWND hwndFrom) {
 	}
 
 	switch (id) {
-	case IDC_ADD_CLIENT_DIR:
-		OnAddClientDir();
-		break;
 	case IDC_DEL_CLIENT_DIR:
 		OnDelClientDir();
 		break;
@@ -306,26 +303,6 @@ void MainWindow::OnInitDialog(LPARAM param) {
 	DragAcceptFiles(m_hWnd, TRUE);
 	// Load locale title
 	// SetWindowText(title);
-}
-
-void MainWindow::OnAddClientDir() {
-	TCHAR buf[1024];
-
-	HWND hwndClientPathCb = GetDlgItem(m_hWnd, IDC_CB_CLIENT_DIR);
-	UINT len = GetDlgItemText(m_hWnd, IDC_CB_CLIENT_DIR, buf, 1024);
-	if (len > 0) {
-		ToDirectoryName(buf);
-	}
-	else {
-		LoadCurrectClientDir(buf, 1024);
-	}
-	TCHAR* pBuf = trim(buf);
-	SetDlgItemText(m_hWnd, IDC_CB_CLIENT_DIR, pBuf);
-	if (!m_project.AddClientDir(pBuf)) {
-		MessageBox(TEXT("Не удалось добавить путь к клиенту WoW в список.\nДиректория не существует или она уже включена в список"));
-		return;
-	}
-	AddToClientDirCb(pBuf);
 }
 
 void MainWindow::OnDelClientDir() {
