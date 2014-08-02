@@ -31,12 +31,13 @@ public:
 	int MessageBox(const TCHAR* message, int flags = MB_ICONINFORMATION);
 
 protected:
-	void OnInitDialog(LPARAM param);
 	void OnCommand(int id, int notifyCode, HWND hwndFrom);
-	void OnNotify(int idCtrl, LPNMHDR lpNmhdr);
 	void OnClose();
 	void OnDestroy();
 	void OnDropFiles(HDROP hDrop);
+	void OnInitDialog(LPARAM param);
+	void OnMinMaxInfo(LPMINMAXINFO lpMinMaxInfo);
+	void OnNotify(int idCtrl, LPNMHDR lpNmhdr);
 	void OnSize(int cx, int cy, INT_PTR flags);
 
 	void OnFileRunWow();

@@ -72,6 +72,9 @@ BOOL MainDlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 	case WM_NOTIFY:
 		g_MainWindow->OnNotify((int)wParam, (LPNMHDR)lParam);
 		break;
+	case WM_GETMINMAXINFO:
+		g_MainWindow->OnMinMaxInfo((LPMINMAXINFO)lParam);
+		break;
 	case WM_SIZE:
 		int cx, cy;
 		INT_PTR flags;
@@ -340,6 +343,7 @@ void MainWindow::OnDelClientDir() {
 			SetDlgItemText(m_hWnd, IDC_CB_CLIENT_DIR, TEXT(""));
 		}
 		SendDlgItemMessage(m_hWnd, IDC_CB_CLIENT_DIR, CB_DELETESTRING, index, 0);
+		OnComboboxClientDirChangeSel();
 	}
 }
 
@@ -538,6 +542,7 @@ bool MainWindow::AddToClientDirCb(const TCHAR* szDir) {
 	HWND hwndClientPathCb = GetDlgItem(m_hWnd, IDC_CB_CLIENT_DIR);
 	LRESULT index = SendMessage(hwndClientPathCb, CB_ADDSTRING, 0, (LPARAM)szDir);
 	SendMessage(hwndClientPathCb, CB_SETCURSEL, index, 0);
+	OnComboboxClientDirChangeSel();
 
 	return true;
 }
@@ -591,4 +596,9 @@ void MainWindow::OnDropFiles(HDROP hDrop) {
 	}
 
 	AddToClientDirCb(szFilePath);
+}
+
+void MainWindow::OnMinMaxInfo(LPMINMAXINFO lpMinMaxInfo) {
+	lpMinMaxInfo->ptMinTrackSize.x = 350;
+	lpMinMaxInfo->ptMinTrackSize.y = 350;
 }
