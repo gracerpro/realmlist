@@ -59,3 +59,12 @@ void WindowImageManager::LoadButtonImagesFromResource(HWND hwndParent, const Win
 		}
 	}
 }
+
+HBITMAP WindowImageManager::GetButtonHBitmap(UINT resourceId) const {
+	auto iterFind = m_buttonBitmaps.find(resourceId);
+	if (iterFind != m_buttonBitmaps.end()) {
+		return (*iterFind).second;
+	}
+
+	return NULL;
+}

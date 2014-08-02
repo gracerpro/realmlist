@@ -23,7 +23,7 @@
 
 // key   -- resource_id
 // value -- HBITMAP
-typedef std::map<int, HBITMAP> ResourceBitmapStore;
+typedef std::map<UINT, HBITMAP> ResourceBitmapStore;
 
 
 class WindowImageManager {
@@ -32,6 +32,8 @@ public:
 	~WindowImageManager();
 
 	void LoadButtonImagesFromResource(HWND hwndParent, const WindowImageItem* arrImage, size_t count);
+
+	HBITMAP GetButtonHBitmap(UINT resourceId) const;
 
 protected:
 

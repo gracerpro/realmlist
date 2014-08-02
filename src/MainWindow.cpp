@@ -324,6 +324,14 @@ void MainWindow::SetImages() {
 		{ IDC_REALMLIST_CUR, IDR_WRITE16, ImageFormatPng },
 	};
 	m_imageManager.LoadButtonImagesFromResource(m_hWnd, arrImage, sizeof(arrImage) / sizeof(arrImage[0]));
+
+	HMENU hMenu = GetMenu(m_hWnd);
+	for (size_t i = 0; i < sizeof(arrImage) / sizeof(arrImage[0]); ++i) {
+		HBITMAP hBitmap = m_imageManager.GetButtonHBitmap(arrImage[i].resourceId);
+		if (hBitmap) {
+			SetMenuItemBitmaps(hMenu, arrImage[i].controlId, MF_BYCOMMAND, hBitmap, NULL);
+		}
+	}
 }
 
 void MainWindow::OnDelClientDir() {
