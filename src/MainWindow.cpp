@@ -81,6 +81,9 @@ BOOL MainDlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 		flags = wParam;
 		g_MainWindow->OnSize(cx, cy, flags);
 		break;
+	case WM_DROPFILES:
+		g_MainWindow->OnDropFiles((HDROP)wParam);
+		break;
 	case WM_CLOSE:
 		g_MainWindow->OnClose();
 		return TRUE;
@@ -211,6 +214,7 @@ static BOOL LoadCurrectClientDir(TCHAR* szClientPath, int size) {
 		szClientPath[dwSize] = 0;
 	}
 	RegCloseKey(hkResult);
+	CharLower(szClientPath);
 
 	return TRUE;
 }
@@ -296,6 +300,7 @@ void MainWindow::OnInitDialog(LPARAM param) {
 	HBITMAP hWowBitmap = LoadBitmap(g_App.GetInstance(), MAKEINTRESOURCE(IDR_BITMAP_WOW16));
 	SendMessage(hwndBtnRunWow, BM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hWowBitmap);
 
+	DragAcceptFiles(m_hWnd, TRUE);
 	// Load locale title
 	// SetWindowText(title);
 }
@@ -527,6 +532,9 @@ void MainWindow::OnRealmlistLviChangeSel() {
 }
 
 bool MainWindow::AddToClientDirCb(const TCHAR* szDir) {
+	TCHAR dir[MAX_PATH];
+
+	wcscpy_s(dir, szDir);
 	HWND hwndClientPathCb = GetDlgItem(m_hWnd, IDC_CB_CLIENT_DIR);
 	LRESULT index = SendMessage(hwndClientPathCb, CB_ADDSTRING, 0, (LPARAM)szDir);
 	SendMessage(hwndClientPathCb, CB_SETCURSEL, index, 0);
@@ -561,4 +569,26 @@ void MainWindow::OnFileRunWow() {
 		_tcscat_s(message, wowExePath);
 		MessageBox(message, MB_ICONWARNING);
 	}
+}
+
+void MainWindow::OnDropFiles(HDROP hDrop) {
+	TCHAR szFilePath[MAX_PATH];
+
+	szFilePath[0] = 0;
+	if (!DragQueryFile(hDrop, 0, szFilePath, MAX_PATH)) {
+		return;
+	}
+	CharLower(szFilePath);
+	if (!wcsstr(szFilePath, L"wow.exe")) {
+		MessageBox(L"Имя файла не содержит WoW.exe");
+		return;
+	}
+	ToDirectoryName(szFilePath);
+	if (!m_project.AddClientDir(szFilePath)) {
+		// TODO: add messages storage
+		MessageBox(TEXT("Не удалось добавить путь к клиенту WoW в список.\nДиректория не существует или она уже включена в список"));
+		return;
+	}
+
+	AddToClientDirCb(szFilePath);
 }

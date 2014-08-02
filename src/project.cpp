@@ -157,7 +157,8 @@ size_t WowClient::LoadClientDirList() {
 	if (stream.is_open()) {
 		TCHAR line[1024];
 		while (stream.getline(line, 1024)) {
-			m_clientDirList.push_back(line);
+			if (line[0])
+				m_clientDirList.push_back(line);
 		}
 		stream.close();
 	}

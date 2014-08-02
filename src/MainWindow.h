@@ -36,6 +36,7 @@ protected:
 	void OnNotify(int idCtrl, LPNMHDR lpNmhdr);
 	void OnClose();
 	void OnDestroy();
+	void OnDropFiles(HDROP hDrop);
 	void OnSize(int cx, int cy, INT_PTR flags);
 
 	void OnFileRunWow();
