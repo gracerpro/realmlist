@@ -219,8 +219,8 @@ static BOOL LoadCurrectClientDir(TCHAR* szClientPath, int size) {
 	return TRUE;
 }
 
-void MainWindow::OnInitDialog(LPARAM param) {
-	LV_COLUMN col = {0};
+void MainWindow::InitListviews() {
+	LV_COLUMN col = { 0 };
 	HWND hwndLvi = GetDlgItem(m_hWnd, IDC_LSV_REALMLIST);
 
 	col.mask = LVCF_TEXT | LVCF_WIDTH;
@@ -234,6 +234,7 @@ void MainWindow::OnInitDialog(LPARAM param) {
 
 	ListView_SetExtendedListViewStyle(hwndLvi, LVS_EX_FULLROWSELECT | LVS_EX_SINGLEROW);
 
+
 	HWND hwndLviClient = GetDlgItem(m_hWnd, IDC_LSV_CLIENT);
 	col.cx = 100;
 	col.pszText = TEXT("Локализация");
@@ -245,12 +246,15 @@ void MainWindow::OnInitDialog(LPARAM param) {
 	ListView_InsertColumn(hwndLviClient, 1, &col);
 
 	ListView_SetExtendedListViewStyle(hwndLviClient, LVS_EX_FULLROWSELECT | LVS_EX_SINGLEROW);
+}
 
-	TCHAR buf[1024];
+void MainWindow::OnInitDialog(LPARAM param) {
 	LV_ITEM item = {0};
 
-	m_project.LoadRealmlist();
-	RealmlistList realmlistList = m_project.GetRealmlistList();
+	InitListviews();
+
+	HWND hwndLvi = GetDlgItem(m_hWnd, IDC_LSV_REALMLIST);
+	RealmlistList realmlistList = m_project.LoadRealmlist();
 	for (size_t i = 0; i < realmlistList.size(); ++i) {
 		const stRealmlist& realmlist = realmlistList[i];
 
@@ -261,10 +265,6 @@ void MainWindow::OnInitDialog(LPARAM param) {
 		TCHAR* pDescr = const_cast<TCHAR*>(realmlist.description.c_str());
 		ListView_SetItemText(hwndLvi, index, 1, pDescr);
 	}
-	Settings settings;
-
-	int indexRealmlist = settings.GetInt(TEXT("selected_realmlist"));
-	SetSelectedIndexLvi(m_hWnd, indexRealmlist);
 
 	m_project.LoadClientDirList();
 	ClientDirList list = m_project.GetClientPathList();
@@ -272,15 +272,32 @@ void MainWindow::OnInitDialog(LPARAM param) {
 		const AppString& clientPath  = *iter;
 		AddToClientDirCb(clientPath.c_str());
 	}
+
+	TCHAR buf[1024];
 	LoadCurrectClientDir(buf, 1024);
 	if (m_project.AddClientDir(buf)) {
 		AddToClientDirCb(buf);
 	}
 
+	Settings settings;
+
+	int indexRealmlist = settings.GetInt(TEXT("selected_realmlist"));
+	SetSelectedIndexLvi(m_hWnd, indexRealmlist);
+
 	int index = settings.GetInt(TEXT("selected_client_dir"));
 	SendDlgItemMessage(m_hWnd, IDC_CB_CLIENT_DIR, CB_SETCURSEL, index, 0);
 	OnComboboxClientDirChangeSel();
 
+	SetTooltips();
+
+	SetImages();
+
+	DragAcceptFiles(m_hWnd, TRUE);
+	// Load locale title
+	// SetWindowText(title);
+}
+
+void MainWindow::SetTooltips() {
 	m_tooltip.Create(NULL);
 
 	m_tooltip.AddTooltip(IDC_ADD_CLIENT_DIR, m_hWnd, TEXT("Добавить путь до клиента WoW в список"));
@@ -295,12 +312,6 @@ void MainWindow::OnInitDialog(LPARAM param) {
 	m_tooltip.AddTooltip(IDC_FILE_RUN_WOW, m_hWnd, TEXT("Запустить WoW"));
 
 	m_tooltip.Activate();
-
-	SetImages();
-
-	DragAcceptFiles(m_hWnd, TRUE);
-	// Load locale title
-	// SetWindowText(title);
 }
 
 void MainWindow::SetImages() {

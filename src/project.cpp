@@ -121,7 +121,7 @@ void WowClient::SaveClientDirList() {
 	ostream.close();
 }
 
-size_t WowClient::LoadRealmlist() {
+const RealmlistList& WowClient::LoadRealmlist() {
 	std::basic_ifstream<TCHAR> stream(GetRealmlistFilePath());
 
 	if (stream.is_open()) {
@@ -148,7 +148,7 @@ size_t WowClient::LoadRealmlist() {
 		}
 	}
 
-	return m_realmlistList.size();
+	return m_realmlistList;
 }
 
 size_t WowClient::LoadClientDirList() {

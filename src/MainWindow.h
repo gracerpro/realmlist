@@ -67,7 +67,9 @@ private:
 
 	INT_PTR GetSelectedRealmlist(TCHAR* realmlist, int bufferSize);
 
+	void InitListviews();
 	void SetImages();
+	void SetTooltips();
 
 	// Truncate the file path to file dir
 	bool AddToClientDirCb(const TCHAR* szDir);

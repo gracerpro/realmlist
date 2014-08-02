@@ -67,7 +67,7 @@ public:
 	bool DelClientDir(size_t index);
 	void SetSelectedClientDir(size_t index);
 
-	size_t LoadRealmlist();
+	const RealmlistList& LoadRealmlist();
 	void SaveRealmlist();
 	bool AddRealmlist(const stRealmlist& realmlist);
 	bool DelRealmlist(const AppString& realmlist);
