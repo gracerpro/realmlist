@@ -21,13 +21,14 @@
 Application::Application() {
 	m_hInst = NULL;
 	m_pMainWindow = NULL;
+	m_gdiplusToken = NULL;
 }
 
 Application::~Application() {
 	delete m_pMainWindow;
 }
 
-int Application::InitInstance(HINSTANCE hInst) {
+bool Application::InitInstance(HINSTANCE hInst) {
 	m_hInst = hInst;
 	INITCOMMONCONTROLSEX icce;
 
@@ -35,7 +36,13 @@ int Application::InitInstance(HINSTANCE hInst) {
 	icce.dwICC  = ICC_LISTVIEW_CLASSES | ICC_BAR_CLASSES;
 	InitCommonControlsEx(&icce);
 
-	return 0;
+	//HeapSetInformation(NULL, HeapEnableTerminationOnCorruption, NULL, 0);
+	//HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
+	Gdiplus::Status status;
+	Gdiplus::GdiplusStartupInput gdiplusStartupInput;
+	status = Gdiplus::GdiplusStartup(&m_gdiplusToken, &gdiplusStartupInput, NULL);
+
+	return status == Gdiplus::Ok;
 }
 
 int Application::Run(int cmdShow) {
@@ -67,4 +74,10 @@ int Application::Run(int cmdShow) {
 	}
 
 	return 0;
+}
+
+void Application::ExitInstance() {
+	if (m_gdiplusToken) {
+		Gdiplus::GdiplusShutdown(m_gdiplusToken);
+	}
 }

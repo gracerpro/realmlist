@@ -27,6 +27,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	g_App.InitInstance(hInstance);
 	g_App.Run(nCmdShow);
+	g_App.ExitInstance();
 
 	return 0;
 }

@@ -296,13 +296,23 @@ void MainWindow::OnInitDialog(LPARAM param) {
 
 	m_tooltip.Activate();
 
-	HWND hwndBtnRunWow = GetDlgItem(m_hWnd, IDC_FILE_RUN_WOW);
-	HBITMAP hWowBitmap = LoadBitmap(g_App.GetInstance(), MAKEINTRESOURCE(IDR_BITMAP_WOW16));
-	SendMessage(hwndBtnRunWow, BM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hWowBitmap);
+	SetImages();
 
 	DragAcceptFiles(m_hWnd, TRUE);
 	// Load locale title
 	// SetWindowText(title);
+}
+
+void MainWindow::SetImages() {
+	WindowImageItem arrImage[] = {
+		{ IDC_FILE_RUN_WOW, IDR_BITMAP_WOW16, ImageFormatBmp },
+		{ IDC_REALMLIST_SET, IDR_OK16, ImageFormatPng },
+		{ IDC_REALMLIST_ADD, IDR_ADD16, ImageFormatPng },
+		{ IDC_REALMLIST_DEL, IDR_DELETE16, ImageFormatPng },
+		{ IDC_DEL_CLIENT_DIR, IDR_DELETE16, ImageFormatPng },
+		{ IDC_REALMLIST_CUR, IDR_WRITE16, ImageFormatPng },
+	};
+	m_imageManager.LoadButtonImagesFromResource(m_hWnd, arrImage, sizeof(arrImage) / sizeof(arrImage[0]));
 }
 
 void MainWindow::OnDelClientDir() {

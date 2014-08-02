@@ -10,6 +10,9 @@ This programm allow manage of realmlists, quickly switch between different realm
 
 ![Main window](https://github.com/gracerpro/realmlist/releases/download/1.0/realmlist.png)
 
+## Dependencies
+gdiplus.dll
+
 ## Copyright
 
 Copiright (C) 2014 SlaFF

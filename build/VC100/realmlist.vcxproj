@@ -30,21 +30,25 @@
     <ClInclude Include="..\..\src\AboutWindow.h" />
     <ClInclude Include="..\..\src\Application.h" />
     <ClInclude Include="..\..\src\global.h" />
+    <ClInclude Include="..\..\src\ImageFactory.h" />
     <ClInclude Include="..\..\src\MainWindow.h" />
     <ClInclude Include="..\..\src\project.h" />
     <ClInclude Include="..\..\src\resource.h" />
     <ClInclude Include="..\..\src\settings.h" />
     <ClInclude Include="..\..\src\tooltip.h" />
+    <ClInclude Include="..\..\src\WindowImageManager.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\AboutWindow.cpp" />
     <ClCompile Include="..\..\src\Application.cpp" />
     <ClCompile Include="..\..\src\global.cpp" />
+    <ClCompile Include="..\..\src\ImageFactory.cpp" />
     <ClCompile Include="..\..\src\MainWindow.cpp" />
     <ClCompile Include="..\..\src\project.cpp" />
     <ClCompile Include="..\..\src\realmlist.cpp" />
     <ClCompile Include="..\..\src\settings.cpp" />
     <ClCompile Include="..\..\src\tooltip.cpp" />
+    <ClCompile Include="..\..\src\WindowImageManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\..\src\realmlist.rc" />
@@ -157,7 +161,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>comctl32.lib;version.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>comctl32.lib;version.lib;gdiplus.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalManifestDependencies>
       </AdditionalManifestDependencies>
     </Link>

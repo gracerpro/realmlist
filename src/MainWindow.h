@@ -19,6 +19,7 @@
 
 #include "project.h"
 #include "tooltip.h"
+#include "WindowImageManager.h"
 #include <Windows.h>
 
 class MainWindow {
@@ -62,8 +63,11 @@ private:
 	HWND m_hWnd;
 	WowClient m_project;
 	Tooltip   m_tooltip;
+	WindowImageManager m_imageManager;
 
 	INT_PTR GetSelectedRealmlist(TCHAR* realmlist, int bufferSize);
+
+	void SetImages();
 
 	// Truncate the file path to file dir
 	bool AddToClientDirCb(const TCHAR* szDir);

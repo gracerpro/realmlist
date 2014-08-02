@@ -48,3 +48,7 @@
 
 
 #define IDR_BITMAP_WOW16          100
+#define IDR_OK16                  101
+#define IDR_ADD16                 102
+#define IDR_DELETE16              103
+#define IDR_WRITE16               104

@@ -19,6 +19,7 @@
 
 #include "MainWindow.h"
 #include <Windows.h>
+#include <gdiplus.h>
 
 class Application {
 public:
@@ -26,13 +27,15 @@ public:
 	~Application();
 
 	HINSTANCE GetInstance() const { return m_hInst; };
-	int InitInstance(HINSTANCE hInst);
+	bool InitInstance(HINSTANCE hInst);
 	int Run(int cmdShow);
+	void ExitInstance();
 
 	const MainWindow& GetMainWindow() const { return *m_pMainWindow; };
 	//MainWindow& GetMainWindow() { return m_MainWindow; };
 
 private:
 	HINSTANCE m_hInst;
+	ULONG_PTR m_gdiplusToken;
 	MainWindow* m_pMainWindow;
 };
