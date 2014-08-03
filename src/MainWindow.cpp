@@ -134,6 +134,13 @@ void MainWindow::OnCommand(int id, int notifyCode, HWND hwndFrom) {
 	case IDC_FILE_RUN_WOW:
 		OnFileRunWow();
 		break;
+
+	case IDC_LOCALE_ENUS:
+	case IDC_LOCALE_RURU:
+		ApplicationLocale locale;
+		locale = (ApplicationLocale)(id - IDC_LOCALE_NULL);
+		SetLocale(locale);
+		break;
 	}
 }
 
@@ -288,11 +295,9 @@ void MainWindow::OnInitDialog(LPARAM param) {
 	SendDlgItemMessage(m_hWnd, IDC_CB_CLIENT_DIR, CB_SETCURSEL, index, 0);
 	OnComboboxClientDirChangeSel();
 
-	SetTooltips();
-
 	SetImages();
 
-	LoadLocaleText();
+	SetLocale(LocaleRuRU);
 
 	DragAcceptFiles(m_hWnd, TRUE);
 }
@@ -332,7 +337,6 @@ void MainWindow::LoadLocaleText() {
 
 		ModifyMenu(hMenu, IDC_HELP_ABOUT, 0, IDC_HELP_ABOUT, g_App.L("m_about"));
 	}
-
 
 	// set main title
 	SetWindowText(m_hWnd, g_App.L("main_window_title"));
@@ -646,4 +650,17 @@ void MainWindow::OnDropFiles(HDROP hDrop) {
 void MainWindow::OnMinMaxInfo(LPMINMAXINFO lpMinMaxInfo) {
 	lpMinMaxInfo->ptMinTrackSize.x = 350;
 	lpMinMaxInfo->ptMinTrackSize.y = 350;
+}
+
+void MainWindow::SetLocale(ApplicationLocale locale) {
+	g_App.GetLocaleManager().SetLocale(locale);
+
+	LoadLocaleText();
+	SetTooltips();
+
+	UINT id = IDC_LOCALE_NULL + locale;
+	HMENU hMenu = GetMenu(m_hWnd);
+	CheckMenuRadioItem(hMenu, IDC_LOCALE_START, IDC_LOCALE_END, id, 0);
+
+	DrawMenuBar(m_hWnd);
 }

@@ -43,11 +43,8 @@ bool Application::InitInstance(HINSTANCE hInst) {
 	//Settings settings;
 	// load locale...
 
-	const TCHAR* locale = TEXT("ruRU");
 	m_localeManager.SetLocaleDir(GetAppDir());
-	if (!m_localeManager.SetLocale(locale)) {
-		m_localeManager.SetLocale();
-	}
+	m_localeManager.SetLocale(LocaleRuRU);
 
 	return status == Gdiplus::Ok;
 }

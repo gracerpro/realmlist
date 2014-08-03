@@ -50,6 +50,11 @@ BEGIN
   POPUP "Help"
   BEGIN
     MENUITEM "About...",IDC_HELP_ABOUT
+    POPUP "Localization"
+    BEGIN
+      MENUITEM "Russian",IDC_LOCALE_RURU
+      MENUITEM "English",IDC_LOCALE_ENUS
+    END
   END
 END
 

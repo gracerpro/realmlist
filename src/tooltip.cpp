@@ -53,9 +53,16 @@ bool Tooltip::AddTooltip(int idCtrl, HWND hwndParent, const TCHAR* text) {
 #ifdef UNICODE
 	tt.cbSize -= sizeof( void*);
 #endif
-	tt.uFlags = TTF_SUBCLASS | TTF_IDISHWND;
 	tt.uId = (UINT_PTR)hwndCtrl;
 	tt.hwnd = hwndParent;
+
+	if (SendMessage(m_hWnd, TTM_GETTOOLINFO, 0, (LPARAM)(LPTOOLINFO)&tt)) {
+		tt.lpszText = (LPWSTR)text;
+		SendMessage(m_hWnd, TTM_UPDATETIPTEXT, 0, (LPARAM)(LPTOOLINFO)&tt);
+		return true;
+	}
+
+	tt.uFlags = TTF_SUBCLASS | TTF_IDISHWND;
 	tt.lpszText = (LPWSTR)text;
 	tt.hinst = GetModuleHandle(NULL);
 	GetClientRect(hwndCtrl, &tt.rect);

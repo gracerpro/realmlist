@@ -24,7 +24,7 @@ const TCHAR* LocaleManager::DEFAULT_LOCALE = TEXT("enUS");
 
 
 LocaleManager::LocaleManager() :
-m_localeName(LocaleManager::DEFAULT_LOCALE)
+m_locale(LocaleNull)
 {
 
 }
@@ -51,12 +51,20 @@ static char* trim(char* str) {
 	return strStart;
 }
 
-bool LocaleManager::SetLocale(const TCHAR* szLocele) {
-	m_localeName = szLocele;
+bool LocaleManager::SetLocale(ApplicationLocale locale) {
+	if (m_locale == locale) {
+		return true;
+	}
+
+	TCHAR* szLocale = TEXT("enUS"); // default
+
+	if (locale == LocaleRuRU) {
+		szLocale = TEXT("ruRU");
+	}
 
 	AppString fileName = m_localeDir;
 	fileName += TEXT("locale_");
-	fileName += szLocele;
+	fileName += szLocale;
 	fileName += TEXT(".txt");
 
 	std::ifstream stream;
@@ -84,7 +92,7 @@ bool LocaleManager::SetLocale(const TCHAR* szLocele) {
 			char* message = trim(keyStart); // always enUS
 			char* localeMessage = trim(valueStart); // utf8
 			// TODO: replace \n\t\r\b\a etc.
-			int writenLen = MultiByteToWideChar(CP_UTF8, 0, localeMessage, strlen(localeMessage), wszLocaleMessage, lineSize);
+			int writenLen = MultiByteToWideChar(CP_UTF8, 0, localeMessage, -1, wszLocaleMessage, lineSize);
 			wszLocaleMessage[writenLen] = 0;
 			m_messages[message] = wszLocaleMessage;
 		}

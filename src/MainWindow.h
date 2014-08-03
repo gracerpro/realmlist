@@ -20,6 +20,7 @@
 #include "project.h"
 #include "tooltip.h"
 #include "WindowImageManager.h"
+#include "LocaleManager.h"
 #include <Windows.h>
 
 class MainWindow {
@@ -61,6 +62,7 @@ protected:
 
 	void LoadLocaleText();
 	void SetDlgItemLocaleText(const char* message, UINT controlId, const char* defaultText = NULL);
+	void SetLocale(ApplicationLocale locale);
 
 private:
 	HWND m_hWnd;

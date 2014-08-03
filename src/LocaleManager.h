@@ -22,12 +22,18 @@
 #include <string>
 #include <map>
 
+
+enum ApplicationLocale {
+	LocaleNull,
+	LocaleEnUS,
+	LocaleRuRU,
+};
+
 /*
 Simple locale messages manager
 Length of each message less or empty then 1024 letters
 
 */
-
 class LocaleManager {
 public:
 	LocaleManager();
@@ -41,7 +47,7 @@ public:
 	@param szLocele (enUS, ruRU etc.)
 	@return true if localization was load success
 	*/
-	bool SetLocale(const TCHAR* szLocele = DEFAULT_LOCALE);
+	bool SetLocale(ApplicationLocale locale = LocaleEnUS);
 	/**
 	@param message Always in English!
 	@return localized text or "" if it not found
@@ -55,7 +61,7 @@ protected:
 
 
 private:
-	AppString m_localeName;
+	ApplicationLocale m_locale;
 	AppString m_localeDir;
 	std::map<std::string, std::wstring> m_messages;
 };

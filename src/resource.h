@@ -48,6 +48,12 @@
 
 #define IDC_HELP_ABOUT            10300
 
+#define IDC_LOCALE_NULL           10400
+#define IDC_LOCALE_ENUS           10401
+#define IDC_LOCALE_RURU           10402
+#define IDC_LOCALE_START          IDC_LOCALE_ENUS
+#define IDC_LOCALE_END            IDC_LOCALE_RURU
+
 
 #define IDR_BITMAP_WOW16          100
 #define IDR_OK16                  101

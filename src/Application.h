@@ -36,6 +36,8 @@ public:
 
 	const MainWindow& GetMainWindow() const { return *m_pMainWindow; };
 
+	LocaleManager& GetLocaleManager() { return m_localeManager; };
+
 	/*
 	@param message always in an English
 	*/
