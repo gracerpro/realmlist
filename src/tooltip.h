@@ -27,7 +27,7 @@ public:
 	HWND Create(HWND hwndParent);
 	void Activate();
 
-	bool AddTooltip(int idCtrl, HWND hwndParent, TCHAR* text);
+	bool AddTooltip(int idCtrl, HWND hwndParent, const TCHAR* text);
 	bool AddTooltip(HWND hwndCtrl, TCHAR* text);
 
 private:

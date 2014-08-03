@@ -36,8 +36,6 @@ bool Application::InitInstance(HINSTANCE hInst) {
 	icce.dwICC  = ICC_LISTVIEW_CLASSES | ICC_BAR_CLASSES;
 	InitCommonControlsEx(&icce);
 
-	//HeapSetInformation(NULL, HeapEnableTerminationOnCorruption, NULL, 0);
-	//HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
 	Gdiplus::Status status;
 	Gdiplus::GdiplusStartupInput gdiplusStartupInput;
 	status = Gdiplus::GdiplusStartup(&m_gdiplusToken, &gdiplusStartupInput, NULL);
@@ -47,7 +45,7 @@ bool Application::InitInstance(HINSTANCE hInst) {
 
 	const TCHAR* locale = TEXT("ruRU");
 	m_localeManager.SetLocaleDir(GetAppDir());
-	if (m_localeManager.SetLocale(locale)) {
+	if (!m_localeManager.SetLocale(locale)) {
 		m_localeManager.SetLocale();
 	}
 

@@ -42,7 +42,7 @@ void Tooltip::Activate() {
 	SendMessage(m_hWnd, TTM_ACTIVATE, TRUE, 0);
 }
 
-bool Tooltip::AddTooltip(int idCtrl, HWND hwndParent, TCHAR* text) {
+bool Tooltip::AddTooltip(int idCtrl, HWND hwndParent, const TCHAR* text) {
 	TOOLINFO tt = {0};
 
 	HWND hwndCtrl = GetDlgItem(hwndParent, idCtrl);
@@ -56,7 +56,7 @@ bool Tooltip::AddTooltip(int idCtrl, HWND hwndParent, TCHAR* text) {
 	tt.uFlags = TTF_SUBCLASS | TTF_IDISHWND;
 	tt.uId = (UINT_PTR)hwndCtrl;
 	tt.hwnd = hwndParent;
-	tt.lpszText = text;
+	tt.lpszText = (LPWSTR)text;
 	tt.hinst = GetModuleHandle(NULL);
 	GetClientRect(hwndCtrl, &tt.rect);
 

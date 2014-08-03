@@ -225,10 +225,10 @@ void MainWindow::InitListviews() {
 
 	col.mask = LVCF_TEXT | LVCF_WIDTH;
 	col.cx = 200;
-	col.pszText = TEXT("Реалмлист");
+	col.pszText = (PWCHAR)g_App.L("realmlist");
 	col.cchTextMax = static_cast<int>(_tcslen(col.pszText));
 	ListView_InsertColumn(hwndLvi, 0, &col);
-	col.pszText = TEXT("Описание (сервер)");
+	col.pszText = (PWCHAR)g_App.L("realmlist_descr_col");
 	col.cchTextMax = static_cast<int>(_tcslen(col.pszText));
 	ListView_InsertColumn(hwndLvi, 1, &col);
 
@@ -237,11 +237,11 @@ void MainWindow::InitListviews() {
 
 	HWND hwndLviClient = GetDlgItem(m_hWnd, IDC_LSV_CLIENT);
 	col.cx = 100;
-	col.pszText = TEXT("Локализация");
+	col.pszText = (PWCHAR)g_App.L("localization");
 	col.cchTextMax = static_cast<int>(_tcslen(col.pszText));
 	ListView_InsertColumn(hwndLviClient, 0, &col);
 	col.cx = 200;
-	col.pszText = TEXT("Реалмлист");
+	col.pszText = (PWCHAR)g_App.L("realmlist");
 	col.cchTextMax = static_cast<int>(_tcslen(col.pszText));
 	ListView_InsertColumn(hwndLviClient, 1, &col);
 
@@ -306,21 +306,33 @@ void MainWindow::SetDlgItemLocaleText(const char* message, UINT controlId, const
 
 void MainWindow::LoadLocaleText() {
 	SetDlgItemLocaleText("realmlist", IDC_STC_REALMLIST);
+	SetDlgItemLocaleText("realmlist_descr_col", IDC_STC_REALMLIST_DESCR);
+	SetDlgItemLocaleText("client_dir", IDC_STC_CLIENT_DIR);
+
+	// menu
+	HMENU hMenu = GetMenu(m_hWnd);
+	if (hMenu) {
+
+
+	}
+
+
+	// set main title
+	SetWindowText(m_hWnd, g_App.L("main_window_title"));
 }
 
 void MainWindow::SetTooltips() {
 	m_tooltip.Create(NULL);
 
-	m_tooltip.AddTooltip(IDC_ADD_CLIENT_DIR, m_hWnd, TEXT("Добавить путь до клиента WoW в список"));
-	m_tooltip.AddTooltip(IDC_DEL_CLIENT_DIR, m_hWnd, TEXT("Удалить путь до клиента WoW из списка"));
-	m_tooltip.AddTooltip(IDC_FIND_CLIENT_DIR, m_hWnd, TEXT("Найти клиент Wow и добавить путь к нему в список"));
+	m_tooltip.AddTooltip(IDC_DEL_CLIENT_DIR, m_hWnd, g_App.L("tt_client_dir_del"));
+	m_tooltip.AddTooltip(IDC_FIND_CLIENT_DIR, m_hWnd, g_App.L("tt_client_dir_find"));
 
-	m_tooltip.AddTooltip(IDC_REALMLIST_CUR, m_hWnd, TEXT("Установить реалмлист в выбранном клиенте и локализации\nЗаписать в файл realmlist.wpf"));
-	m_tooltip.AddTooltip(IDC_REALMLIST_ADD, m_hWnd, TEXT("Добавить реалмлист в список"));
-	m_tooltip.AddTooltip(IDC_REALMLIST_DEL, m_hWnd, TEXT("Удалить реалмлист из списка"));
-	m_tooltip.AddTooltip(IDC_REALMLIST_SET, m_hWnd, TEXT("Изменить название реалмлиста"));
+	m_tooltip.AddTooltip(IDC_REALMLIST_CUR, m_hWnd, g_App.L("tt_realmlist_write"));
+	m_tooltip.AddTooltip(IDC_REALMLIST_ADD, m_hWnd, g_App.L("tt_realmlist_write"));
+	m_tooltip.AddTooltip(IDC_REALMLIST_DEL, m_hWnd, g_App.L("tt_realmlist_del"));
+	m_tooltip.AddTooltip(IDC_REALMLIST_SET, m_hWnd, g_App.L("tt_realmlist_change"));
 
-	m_tooltip.AddTooltip(IDC_FILE_RUN_WOW, m_hWnd, TEXT("Запустить WoW"));
+	m_tooltip.AddTooltip(IDC_FILE_RUN_WOW, m_hWnd, g_App.L("tt_run_wow"));
 
 	m_tooltip.Activate();
 }
@@ -348,7 +360,7 @@ void MainWindow::SetImages() {
 void MainWindow::OnDelClientDir() {
 	LRESULT index = SendDlgItemMessage(m_hWnd, IDC_CB_CLIENT_DIR, CB_GETCURSEL, 0, 0);
 	if (index == CB_ERR) {
-		MessageBox(TEXT("Не выбран путь к клиенту"));
+		MessageBox(g_App.L("client_dir_not_select"));
 		return;
 	}
 	if (m_project.DelClientDir(index)) {
@@ -392,7 +404,7 @@ void MainWindow::OnAddRealmlist() {
 	TCHAR buf[1024];
 
 	if (!GetDlgItemText(m_hWnd, IDC_EDT_REALMLIST, buf, 1024)) {
-		MessageBox(TEXT("Введите реалмлист"));
+		MessageBox(g_App.L("realmlist_not_write"));
 		return;
 	}
 	realmlist.name = buf;
@@ -401,7 +413,7 @@ void MainWindow::OnAddRealmlist() {
 	realmlist.description = buf;
 
 	if (!m_project.AddRealmlist(realmlist)) {
-		MessageBox(TEXT("Не удалось добавить реалмлист в список. Возможно он уже присутствует в нем."));
+		MessageBox(g_App.L("realmlist_add_fail"));
 		return;
 	}
 	// TODO: function
@@ -421,10 +433,10 @@ void MainWindow::OnDelRealmlist() {
 
 	INT_PTR index = GetSelectedRealmlist(realmlist, 1024);
 	if (index == -1) {
-		MessageBox(TEXT("Не выбран реалмлист"));
+		MessageBox(g_App.L("realmlist_not_select"));
 		return;
 	}
-	if (IDOK != MessageBox(TEXT("Подтвердите удаление"), MB_OKCANCEL | MB_ICONINFORMATION)) {
+	if (IDOK != MessageBox(g_App.L("confirm_delete"), MB_OKCANCEL | MB_ICONINFORMATION)) {
 		return;
 	}
 	if (m_project.DelRealmlist(realmlist)) {
@@ -434,7 +446,7 @@ void MainWindow::OnDelRealmlist() {
 }
 
 void MainWindow::OnDelAllRealmlist() {
-	if (IDOK == MessageBox(TEXT("Подтвердите удаление всех реалмлистов"), MB_ICONQUESTION | MB_OKCANCEL)) {
+	if (IDOK == MessageBox(g_App.L("confirm_delete"), MB_ICONQUESTION | MB_OKCANCEL)) {
 		m_project.DelAllRealmlist();
 		SendDlgItemMessage(m_hWnd, IDC_LSV_REALMLIST, LVM_DELETEALLITEMS, 0, 0);
 	}
@@ -446,7 +458,7 @@ void MainWindow::OnChangeRealmlist() {
 	TCHAR realmlistName[255];
 
 	if (!GetDlgItemText(m_hWnd, IDC_EDT_REALMLIST, buf, 1024)) {
-		MessageBox(TEXT("Введите реалмлист"));
+		MessageBox(g_App.L("realmlist_not_write"));
 		return;
 	}
 	realmlist.name = buf;
@@ -460,11 +472,11 @@ void MainWindow::OnChangeRealmlist() {
 
 	INT_PTR index = GetSelectedRealmlist(realmlistName, 255);
 	if (index == -1) {
-		MessageBox(TEXT("Выберите реалмлист"));
+		MessageBox(g_App.L("realmlist_not_select"));
 		return;
 	}
 	if (!m_project.ChangeRealmlist(realmlistName, realmlist)) {
-		MessageBox(TEXT("Не удалось изменить реалмлист. Возможно он уже присутствует в списке."));
+		MessageBox(g_App.L("realmlist_change_fail"));
 		return;
 	}
 
@@ -478,18 +490,18 @@ void MainWindow::OnSetCurrentRealmlist() {
 	HWND hwndLviRealmlist = GetDlgItem(m_hWnd, IDC_LSV_REALMLIST);
 	LRESULT realmlistIndex = GetSelectedIndexLvi(hwndLviRealmlist);
 	if (realmlistIndex == -1) {
-		MessageBox(TEXT("Выберите реалмлист"));
+		MessageBox(g_App.L("realmlist_not_select"));
 		return;
 	}
 	HWND hwndLviLocale = GetDlgItem(m_hWnd, IDC_LSV_CLIENT);
 	LRESULT localeIndex = GetSelectedIndexLvi(hwndLviLocale);
 	if (localeIndex == -1) {
-		MessageBox(TEXT("Выберите локализацию клиента"));
+		MessageBox(g_App.L("localization_not_select"));
 		return;
 	}
 	LRESULT selectedClientWowDir = SendDlgItemMessage(m_hWnd, IDC_CB_CLIENT_DIR, CB_GETCURSEL, 0, 0);
 	if (selectedClientWowDir == CB_ERR) {
-		MessageBox(TEXT("Не выбран путь к клиенту WoW"));
+		MessageBox(g_App.L("client_dir_not_select"));
 		return;
 	}
 
@@ -577,7 +589,7 @@ void MainWindow::OnFileRunWow() {
 
 	INT_PTR index = SendDlgItemMessage(m_hWnd, IDC_CB_CLIENT_DIR, CB_GETCURSEL, 0, 0);
 	if (index == -1) {
-		MessageBox(TEXT("Не выбран путь к клиенту"));
+		MessageBox(g_App.L("client_dir_not_select"));
 		return;
 	}
 	SendDlgItemMessage(m_hWnd, IDC_CB_CLIENT_DIR, CB_GETLBTEXT, index, (LPARAM)wowExePath);
@@ -585,9 +597,12 @@ void MainWindow::OnFileRunWow() {
 
 	_tcscat_s(wowExePath, TEXT("WoW.exe"));
 
+	MessageBox(g_App.L("run_wow_fail"));
+	return;
+
 	if (!CreateProcess(wowExePath, TEXT(""), NULL, NULL, FALSE, CREATE_DEFAULT_ERROR_MODE, NULL, NULL, &sti, &pi)) {
 		TCHAR message[MAX_PATH + 100];
-		_tcscpy_s(message, TEXT("Не удалось запустить WoW\n"));
+		_tcscpy_s(message, g_App.L("run_wow_fail"));
 		_tcscat_s(message, wowExePath);
 		MessageBox(message, MB_ICONWARNING);
 	}
@@ -602,13 +617,12 @@ void MainWindow::OnDropFiles(HDROP hDrop) {
 	}
 	CharLower(szFilePath);
 	if (!wcsstr(szFilePath, TEXT("wow.exe"))) {
-		MessageBox(TEXT("Имя файла не содержит WoW.exe"));
+		MessageBox(g_App.L("file_name_not_contain_wow_exe"));
 		return;
 	}
 	ToDirectoryName(szFilePath);
 	if (!m_project.AddClientDir(szFilePath)) {
-		// TODO: add messages storage
-		MessageBox(TEXT("Не удалось добавить путь к клиенту WoW в список.\nДиректория не существует или она уже включена в список"));
+		MessageBox(g_App.L("client_dir_add_fail"));
 		return;
 	}
 

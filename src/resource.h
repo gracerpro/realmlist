@@ -30,6 +30,8 @@
 #define IDC_EDT_REALMLIST         1004
 #define IDC_LSV_CLIENT            1005
 #define IDC_STC_REALMLIST         1006
+#define IDC_STC_REALMLIST_DESCR   1007
+#define IDC_STC_CLIENT_DIR        1008
 
 #define IDC_FILE_EXIT             10000
 #define IDC_FILE_RUN_WOW          10001
@@ -41,7 +43,6 @@
 #define IDC_REALMLIST_DEL_ALL     10104
 
 
-#define IDC_ADD_CLIENT_DIR        10050
 #define IDC_DEL_CLIENT_DIR        10051
 #define IDC_FIND_CLIENT_DIR       10052
 

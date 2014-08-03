@@ -83,7 +83,7 @@ bool LocaleManager::SetLocale(const TCHAR* szLocele) {
 
 			char* message = trim(keyStart); // always enUS
 			char* localeMessage = trim(valueStart); // utf8
-
+			// TODO: replace \n\t\r\b\a etc.
 			int writenLen = MultiByteToWideChar(CP_UTF8, 0, localeMessage, strlen(localeMessage), wszLocaleMessage, lineSize);
 			wszLocaleMessage[writenLen] = 0;
 			m_messages[message] = wszLocaleMessage;
