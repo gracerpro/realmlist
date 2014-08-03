@@ -3,7 +3,8 @@ res/
 build/VC100/Debug/
 build/VC100/Release/
 build/VC100/x64/
-bin/
+bin/*.*
+!bin/locale_*.txt
 bin64/
 build/VC100/*.user
 release/
@@ -12,3 +13,4 @@ release/
 *.sdf
 *.suo
 *.bat
+*.pdb

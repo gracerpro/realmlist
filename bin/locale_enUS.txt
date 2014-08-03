@@ -1,0 +1,24 @@
+; MainWindow
+
+client_dir = Directory with WoW.exe
+client_dir_add_fail = Add WoW directory to list fail
+client_dir_not_select = Client directory not select
+confirm_delete = Confirm delete
+file_name_not_contain_wow_exe = File name not contains "WoW.exe"
+localization = Localization
+localization_not_select = Select localization
+realmlist = Realmlist
+realmlist_descr_col = Description (server)
+realmlist_add_fail = Fail. Duplicate realmlist
+realmlist_change_fail = Fail. Duplicate realmlist
+realmlist_not_write = Write realmlist
+realmlist_not_select = Select realmlist
+run_wow_fail = Run WoW fail\n
+main_window_title = Realmlist manager
+tt_client_dir_del = Remove WoW client directory from list
+tt_client_dir_find = Find WoW cliend and add path to list
+tt_realmlist_add = Add realmlist to list
+tt_realmlist_change = Change realmlist name
+tt_realmlist_del = Delete realmlist from list
+tt_realmlist_write = Write realmlist to file realmlist.wpf
+tt_run_wow = Run WoW

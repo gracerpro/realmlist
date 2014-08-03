@@ -1,0 +1,29 @@
+; MainWindow
+
+client_dir = Директория в которой лежит WoW.exe
+client_dir_add_fail = Не удалось добавить путь к клиенту WoW в список.\nДиректория не существует или она уже включена в список
+client_dir_not_select = Не выбран путь к клиенту
+confirm_delete = Подтвердите удаление
+file_name_not_contain_wow_exe = Имя файла не содержит "WoW.exe"
+localization = Локализация
+localization_not_select = Выберите локализацию клиента
+realmlist = Реалмлист
+realmlist_descr_col = Описание (сервер)
+realmlist_add_fail = Не удалось добавить реалмлист в список. Возможно, он уже присутствует в нем.
+realmlist_change_fail = Не удалось изменить реалмлист. Возможно, он уже присутствует в списке
+realmlist_not_write = Введите реалмлист
+realmlist_not_select = Не выбран реалмлист
+run_wow_fail = Не удалось запустить WoW\n
+main_window_title = Управление реалмлистами
+tt_client_dir_del = Удалить путь до клиента WoW из списка
+tt_client_dir_find = Найти клиент Wow и добавить путь к нему в список
+tt_realmlist_add = Добавить реалмлист в список
+tt_realmlist_change = Изменить название реалмлиста
+tt_realmlist_del = Удалить реалмлист из списка
+tt_realmlist_write = Записать реалмлист в файл realmlist.wpf
+tt_run_wow = Запустить WoW
+
+
+
+
+
