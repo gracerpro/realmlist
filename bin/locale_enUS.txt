@@ -22,3 +22,24 @@ tt_realmlist_change = Change realmlist name
 tt_realmlist_del = Delete realmlist from list
 tt_realmlist_write = Write realmlist to file realmlist.wpf
 tt_run_wow = Run WoW
+
+
+; MainWindow Menu
+m_main_window_run_wow = Run WoW
+m_main_window_exit = Exit
+
+m_realmlist_write = Write
+
+m_client_dir = Directory WoW
+m_client_dir_find = Find...
+
+m_about = About...
+
+
+; Common
+common_add = Add
+common_change = Change
+common_del = Delete
+common_del_all = Delete all
+common_file = File
+common_help = Help

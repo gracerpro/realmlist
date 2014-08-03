@@ -24,6 +24,22 @@ tt_realmlist_write = Записать реалмлист в файл realmlist.w
 tt_run_wow = Запустить WoW
 
 
+; MainWindow Menu
+m_main_window_run_wow = Запустить WoW
+m_main_window_exit = Выход
+
+m_realmlist_write = Записать
+
+m_client_dir = Директрия WoW
+m_client_dir_find = Найти...
+
+m_about = О программе...
 
 
-
+; Common
+common_add = Добавить
+common_change = Изменить
+common_del = Удалить
+common_del_all = Удалить все
+common_file = Файл
+common_help = Помощь

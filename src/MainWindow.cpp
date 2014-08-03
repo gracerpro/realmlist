@@ -312,8 +312,25 @@ void MainWindow::LoadLocaleText() {
 	// menu
 	HMENU hMenu = GetMenu(m_hWnd);
 	if (hMenu) {
+		// TODO: do function...
+		ModifyMenu(hMenu, 0, MF_BYPOSITION, 0, g_App.L("common_file"));
+		ModifyMenu(hMenu, 1, MF_BYPOSITION, 1, g_App.L("realmlist"));
+		ModifyMenu(hMenu, 2, MF_BYPOSITION, 2, g_App.L("m_client_dir"));
+		ModifyMenu(hMenu, 3, MF_BYPOSITION, 3, g_App.L("common_help"));
 
+		ModifyMenu(hMenu, IDC_FILE_RUN_WOW, 0, IDC_FILE_RUN_WOW, g_App.L("m_main_window_run_wow"));
+		ModifyMenu(hMenu, IDC_FILE_EXIT, 0, IDC_FILE_EXIT, g_App.L("m_main_window_exit"));
 
+		ModifyMenu(hMenu, IDC_REALMLIST_ADD, 0, IDC_REALMLIST_ADD, g_App.L("common_add"));
+		ModifyMenu(hMenu, IDC_REALMLIST_DEL, 0, IDC_REALMLIST_DEL, g_App.L("common_del"));
+		ModifyMenu(hMenu, IDC_REALMLIST_SET, 0, IDC_REALMLIST_SET, g_App.L("common_change"));
+		ModifyMenu(hMenu, IDC_REALMLIST_CUR, 0, IDC_REALMLIST_CUR, g_App.L("m_realmlist_write"));
+		ModifyMenu(hMenu, IDC_REALMLIST_DEL_ALL, 0, IDC_REALMLIST_DEL_ALL, g_App.L("common_del_all"));
+
+		ModifyMenu(hMenu, IDC_DEL_CLIENT_DIR, 0, IDC_DEL_CLIENT_DIR, g_App.L("common_del"));
+		ModifyMenu(hMenu, IDC_FIND_CLIENT_DIR, 0, IDC_FIND_CLIENT_DIR, g_App.L("m_client_dir_find"));
+
+		ModifyMenu(hMenu, IDC_HELP_ABOUT, 0, IDC_HELP_ABOUT, g_App.L("m_about"));
 	}
 
 
@@ -596,9 +613,6 @@ void MainWindow::OnFileRunWow() {
 	ToDirectoryName(wowExePath);
 
 	_tcscat_s(wowExePath, TEXT("WoW.exe"));
-
-	MessageBox(g_App.L("run_wow_fail"));
-	return;
 
 	if (!CreateProcess(wowExePath, TEXT(""), NULL, NULL, FALSE, CREATE_DEFAULT_ERROR_MODE, NULL, NULL, &sti, &pi)) {
 		TCHAR message[MAX_PATH + 100];
