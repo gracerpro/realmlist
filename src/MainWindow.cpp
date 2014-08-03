@@ -413,7 +413,7 @@ void MainWindow::OnDelRealmlist() {
 		MessageBox(TEXT("Не выбран реалмлист"));
 		return;
 	}
-	if (IDOK != MessageBox(L"Подтвердите удаление", MB_OKCANCEL | MB_ICONINFORMATION)) {
+	if (IDOK != MessageBox(TEXT("Подтвердите удаление"), MB_OKCANCEL | MB_ICONINFORMATION)) {
 		return;
 	}
 	if (m_project.DelRealmlist(realmlist)) {
@@ -423,7 +423,7 @@ void MainWindow::OnDelRealmlist() {
 }
 
 void MainWindow::OnDelAllRealmlist() {
-	if (IDOK == MessageBox(L"Подтвердите удаление всех реалмлистов", MB_ICONQUESTION | MB_OKCANCEL)) {
+	if (IDOK == MessageBox(TEXT("Подтвердите удаление всех реалмлистов"), MB_ICONQUESTION | MB_OKCANCEL)) {
 		m_project.DelAllRealmlist();
 		SendDlgItemMessage(m_hWnd, IDC_LSV_REALMLIST, LVM_DELETEALLITEMS, 0, 0);
 	}
@@ -590,8 +590,8 @@ void MainWindow::OnDropFiles(HDROP hDrop) {
 		return;
 	}
 	CharLower(szFilePath);
-	if (!wcsstr(szFilePath, L"wow.exe")) {
-		MessageBox(L"Имя файла не содержит WoW.exe");
+	if (!wcsstr(szFilePath, TEXT("wow.exe"))) {
+		MessageBox(TEXT("Имя файла не содержит WoW.exe"));
 		return;
 	}
 	ToDirectoryName(szFilePath);
