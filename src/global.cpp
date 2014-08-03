@@ -53,7 +53,7 @@ TCHAR* trim(TCHAR* str) {
 		++res;
 	}
 
-	TCHAR *pEnd = &res[_tcslen(res) - 1];
+	TCHAR* pEnd = &res[_tcslen(res) - 1];
 	while (pEnd > res && (*pEnd == ' ' || *pEnd == '\n' || *pEnd == '\t' || *pEnd == '\r')) {
 		--pEnd;
 	}

@@ -31,6 +31,7 @@
     <ClInclude Include="..\..\src\Application.h" />
     <ClInclude Include="..\..\src\global.h" />
     <ClInclude Include="..\..\src\ImageFactory.h" />
+    <ClInclude Include="..\..\src\LocaleManager.h" />
     <ClInclude Include="..\..\src\MainWindow.h" />
     <ClInclude Include="..\..\src\project.h" />
     <ClInclude Include="..\..\src\resource.h" />
@@ -43,6 +44,7 @@
     <ClCompile Include="..\..\src\Application.cpp" />
     <ClCompile Include="..\..\src\global.cpp" />
     <ClCompile Include="..\..\src\ImageFactory.cpp" />
+    <ClCompile Include="..\..\src\LocaleManager.cpp" />
     <ClCompile Include="..\..\src\MainWindow.cpp" />
     <ClCompile Include="..\..\src\project.cpp" />
     <ClCompile Include="..\..\src\realmlist.cpp" />

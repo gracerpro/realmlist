@@ -29,6 +29,7 @@
 #define IDC_EDT_REALMLIST_DESCR   1003
 #define IDC_EDT_REALMLIST         1004
 #define IDC_LSV_CLIENT            1005
+#define IDC_STC_REALMLIST         1006
 
 #define IDC_FILE_EXIT             10000
 #define IDC_FILE_RUN_WOW          10001

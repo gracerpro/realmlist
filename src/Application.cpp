@@ -42,6 +42,15 @@ bool Application::InitInstance(HINSTANCE hInst) {
 	Gdiplus::GdiplusStartupInput gdiplusStartupInput;
 	status = Gdiplus::GdiplusStartup(&m_gdiplusToken, &gdiplusStartupInput, NULL);
 
+	//Settings settings;
+	// load locale...
+
+	const TCHAR* locale = TEXT("ruRU");
+	m_localeManager.SetLocaleDir(GetAppDir());
+	if (m_localeManager.SetLocale(locale)) {
+		m_localeManager.SetLocale();
+	}
+
 	return status == Gdiplus::Ok;
 }
 
@@ -80,4 +89,30 @@ void Application::ExitInstance() {
 	if (m_gdiplusToken) {
 		Gdiplus::GdiplusShutdown(m_gdiplusToken);
 	}
+}
+
+const wchar_t* Application::L(const char* message) {
+	const wchar_t* text = m_localeManager.GetText(message);
+	if (!text || !text[0]) {
+		return TEXT("");
+	}
+
+	return text;
+}
+
+const TCHAR* Application::GetAppDir() const {
+	static TCHAR file[MAX_PATH];
+
+	DWORD len = GetModuleFileName(NULL, file, MAX_PATH);
+	if (!len) {
+		return TEXT("");
+	}
+
+	TCHAR* p = &file[len - 1];
+	while (p > file && !(*p == '/' || *p == '\\')) {
+		--p;
+	}
+	*(p + 1) = 0;
+
+	return file;
 }

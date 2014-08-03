@@ -18,6 +18,7 @@
 #pragma once
 
 #include "MainWindow.h"
+#include "LocaleManager.h"
 #include <Windows.h>
 #include <gdiplus.h>
 
@@ -31,11 +32,18 @@ public:
 	int Run(int cmdShow);
 	void ExitInstance();
 
+	const TCHAR* GetAppDir() const;
+
 	const MainWindow& GetMainWindow() const { return *m_pMainWindow; };
-	//MainWindow& GetMainWindow() { return m_MainWindow; };
+
+	/*
+	@param message always in an English
+	*/
+	const wchar_t* L(const char* message);
 
 private:
 	HINSTANCE m_hInst;
 	ULONG_PTR m_gdiplusToken;
 	MainWindow* m_pMainWindow;
+	LocaleManager m_localeManager;
 };

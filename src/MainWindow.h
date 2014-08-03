@@ -59,6 +59,9 @@ protected:
 
 	friend BOOL MainDlgProc(HWND, UINT, WPARAM, LPARAM);
 
+	void LoadLocaleText();
+	void SetDlgItemLocaleText(const char* message, UINT controlId, const char* defaultText = NULL);
+
 private:
 	HWND m_hWnd;
 	WowClient m_project;

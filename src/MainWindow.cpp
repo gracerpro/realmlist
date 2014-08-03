@@ -46,7 +46,7 @@ MainWindow::MainWindow(HINSTANCE hInst) {
 	m_hWnd = CreateDialog(hInst, MAKEINTRESOURCE(IDR_MAINFRAME), NULL, (DLGPROC)MainDlgProc);
 
 	if (!m_hWnd) {
-		throw TEXT("Не удалось создать главное окно");
+		throw TEXT("Create main window fail");
 	}
 }
 
@@ -292,9 +292,20 @@ void MainWindow::OnInitDialog(LPARAM param) {
 
 	SetImages();
 
+	LoadLocaleText();
+
 	DragAcceptFiles(m_hWnd, TRUE);
-	// Load locale title
-	// SetWindowText(title);
+}
+
+void MainWindow::SetDlgItemLocaleText(const char* message, UINT controlId, const char* defaultText) {
+	const TCHAR* text = g_App.L(message);
+	if (text && text[0]) {
+		SetDlgItemText(m_hWnd, controlId, text);
+	}
+}
+
+void MainWindow::LoadLocaleText() {
+	SetDlgItemLocaleText("realmlist", IDC_STC_REALMLIST);
 }
 
 void MainWindow::SetTooltips() {
