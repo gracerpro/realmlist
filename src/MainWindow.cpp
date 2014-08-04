@@ -224,42 +224,23 @@ void MainWindow::InitListviews() {
 	LV_COLUMN col = { 0 };
 	HWND hwndLvi = GetDlgItem(m_hWnd, IDC_LSV_SERVER);
 
-	col.mask = LVCF_TEXT | LVCF_WIDTH;
+	col.mask = LVCF_WIDTH | LVCF_TEXT;
 	col.cx = 200;
-	col.pszText = (PWCHAR)g_App.L("server_addr");
-	col.cchTextMax = static_cast<int>(_tcslen(col.pszText));
+	col.pszText = TEXT("");
 	ListView_InsertColumn(hwndLvi, 0, &col);
-	col.pszText = (PWCHAR)g_App.L("server_descr_col");
-	col.cchTextMax = static_cast<int>(_tcslen(col.pszText));
 	ListView_InsertColumn(hwndLvi, 1, &col);
-
 	ListView_SetExtendedListViewStyle(hwndLvi, LVS_EX_FULLROWSELECT | LVS_EX_SINGLEROW);
-
 
 	HWND hwndLviClient = GetDlgItem(m_hWnd, IDC_LSV_CLIENT);
 	col.cx = 100;
-	col.pszText = (PWCHAR)g_App.L("localization");
-	col.cchTextMax = static_cast<int>(_tcslen(col.pszText));
 	ListView_InsertColumn(hwndLviClient, 0, &col);
 	col.cx = 200;
-	col.pszText = (PWCHAR)g_App.L("server_addr");
-	col.cchTextMax = static_cast<int>(_tcslen(col.pszText));
 	ListView_InsertColumn(hwndLviClient, 1, &col);
-
 	ListView_SetExtendedListViewStyle(hwndLviClient, LVS_EX_FULLROWSELECT | LVS_EX_SINGLEROW);
 }
 
-void MainWindow::OnInitDialog(LPARAM param) {
-	Settings settings;
-
-	m_tooltip.Create(m_hWnd);
-	m_tooltip.Activate();
-	ApplicationLocale locale = static_cast<ApplicationLocale>(settings.GetInt(TEXT("locale")));
-	SetLocale(locale, false);
-
-	LV_ITEM item = {0};
-
-	InitListviews();
+void MainWindow::FillServerListView() {
+	LV_ITEM item = { 0 };
 
 	HWND hwndLvi = GetDlgItem(m_hWnd, IDC_LSV_SERVER);
 	ServerList ServerList = m_project.LoadServers();
@@ -273,6 +254,19 @@ void MainWindow::OnInitDialog(LPARAM param) {
 		TCHAR* pDescr = const_cast<TCHAR*>(server.description.c_str());
 		ListView_SetItemText(hwndLvi, index, 1, pDescr);
 	}
+}
+
+void MainWindow::OnInitDialog(LPARAM param) {
+	Settings settings;
+
+	InitListviews();
+
+	m_tooltip.Create(m_hWnd);
+	m_tooltip.Activate();
+	ApplicationLocale locale = static_cast<ApplicationLocale>(settings.GetInt(TEXT("locale")));
+	SetLocale(locale, false);
+
+	FillServerListView();
 
 	m_project.LoadClientDirList();
 	ClientDirList list = m_project.GetClientPathList();
@@ -359,7 +353,20 @@ void MainWindow::LoadLocaleText() {
 	}
 
 	// ListView columns
-	// ...
+	LV_COLUMN col = { 0 };
+	col.mask = LVCF_TEXT;
+
+	HWND hwndLvi = GetDlgItem(m_hWnd, IDC_LSV_SERVER);
+	col.pszText = const_cast<LPWSTR>(g_App.L("server_addr"));
+	ListView_SetColumn(hwndLvi, 0, &col);
+	col.pszText = const_cast<LPWSTR>(g_App.L("server_descr_col"));
+	ListView_SetColumn(hwndLvi, 1, &col);
+
+	HWND hwndLviClient = GetDlgItem(m_hWnd, IDC_LSV_CLIENT);
+	col.pszText = (PWCHAR)g_App.L("localization");
+	ListView_SetColumn(hwndLviClient, 0, &col);
+	col.pszText = (PWCHAR)g_App.L("server_addr");
+	ListView_SetColumn(hwndLviClient, 1, &col);
 
 	// set main title
 	SetWindowText(m_hWnd, g_App.L("main_window_title"));

@@ -62,6 +62,7 @@ protected:
 	friend BOOL MainDlgProc(HWND, UINT, WPARAM, LPARAM);
 
 	void LoadLocaleText();
+	void FillServerListView();
 	void SetDlgItemLocaleText(const char* message, UINT controlId, const char* defaultText = NULL);
 	void SetLocale(ApplicationLocale locale, bool bUserSelect);
 
