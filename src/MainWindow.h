@@ -63,6 +63,7 @@ protected:
 
 	void LoadLocaleText();
 	void FillServerListView();
+	void RetrieveServersStatus();
 	void SetDlgItemLocaleText(const char* message, UINT controlId, const char* defaultText = NULL);
 	void SetLocale(ApplicationLocale locale, bool bUserSelect);
 
@@ -72,7 +73,7 @@ private:
 	Tooltip   m_tooltip;
 	WindowImageManager m_imageManager;
 
-	INT_PTR GetSelectedServer(TCHAR* serverUrl, int bufferSize);
+	int GetSelectedServer(TCHAR* serverUrl, int bufferSize);
 
 	void InitListviews();
 	void SetImages();

@@ -22,6 +22,7 @@
 #include <iostream>
 #include <fstream>
 #include <WinVer.h>
+#include <winsock.h>
 
 WowClient::WowClient() {
 	m_selectedClientDirIndex = -1;
@@ -123,6 +124,8 @@ void WowClient::SaveClientDirList() {
 
 const ServerList& WowClient::LoadServers() {
 	std::basic_ifstream<TCHAR> stream(GetRealmlistFilePath());
+
+	m_serverList.clear();
 
 	if (stream.is_open()) {
 		TCHAR line[1024];
@@ -378,4 +381,48 @@ size_t WowClient::LoadLocaleServerAddr(LocaleServerList& list, size_t clientDirI
 	}
 
 	return list.size();
+}
+
+AppString WowClient::GetServerStatusName(const AppString& serverAddr) {
+	AppString statusName = TEXT("close");
+
+	SOCKET s = socket(AF_INET, SOCK_STREAM, 0);
+	if (s == SOCKET_ERROR) {
+		return statusName;
+	}
+
+	const char* host;
+#ifdef UNICODE
+	char szAddress[255];
+	const wchar_t* wszAddress = serverAddr.c_str();
+	mbstate_t state;
+	size_t convertRetVal;
+	wcsrtombs_s(&convertRetVal, szAddress, &wszAddress, sizeof(szAddress), &state);
+	host = szAddress;
+#else
+	host = serverAddr.c_str();
+#endif
+	u_long address = inet_addr(host);
+	
+	if (address == INADDR_NONE) {
+		hostent* pHostent = gethostbyname(host);
+		if (pHostent) {
+			address = *((u_long*)pHostent->h_addr_list[0]);
+		}
+	}
+
+	if (address != INADDR_NONE) {
+		sockaddr_in addr;
+		addr.sin_family = AF_INET;
+		addr.sin_port = htons(WOW_PORT);
+		addr.sin_addr.S_un.S_addr = address;
+
+		if (connect(s, (const sockaddr*)&addr, sizeof(addr)) != SOCKET_ERROR) {
+			statusName = TEXT("open");
+		}
+	}
+
+	closesocket(s);
+
+	return statusName;
 }

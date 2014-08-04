@@ -17,6 +17,7 @@
  */
 #include "Application.h"
 #include <CommCtrl.h>
+#include <winsock.h>
 
 Application::Application() {
 	m_hInst = NULL;
@@ -25,10 +26,16 @@ Application::Application() {
 }
 
 Application::~Application() {
-	delete m_pMainWindow;
+	ExitInstance();
+
+	if (m_pMainWindow) {
+		delete m_pMainWindow;
+	}
 }
 
 bool Application::InitInstance(HINSTANCE hInst) {
+	bool result = true;
+
 	m_hInst = hInst;
 	INITCOMMONCONTROLSEX icce;
 
@@ -36,14 +43,18 @@ bool Application::InitInstance(HINSTANCE hInst) {
 	icce.dwICC  = ICC_LISTVIEW_CLASSES | ICC_BAR_CLASSES;
 	InitCommonControlsEx(&icce);
 
-	Gdiplus::Status status;
 	Gdiplus::GdiplusStartupInput gdiplusStartupInput;
-	status = Gdiplus::GdiplusStartup(&m_gdiplusToken, &gdiplusStartupInput, NULL);
+	Gdiplus::Status status = Gdiplus::GdiplusStartup(&m_gdiplusToken, &gdiplusStartupInput, NULL);
+	result &= status == Gdiplus::Ok;
+
+	WSADATA wsaData;
+	int socketErr = WSAStartup(0x0101, &wsaData);
+	result &= socketErr == 0;
 
 	m_localeManager.SetLocaleDir(GetAppDir());
 	m_localeManager.LoadDefaultLocale();
 
-	return status == Gdiplus::Ok;
+	return result;
 }
 
 int Application::Run(int cmdShow) {
@@ -80,6 +91,8 @@ void Application::ExitInstance() {
 	if (m_gdiplusToken) {
 		Gdiplus::GdiplusShutdown(m_gdiplusToken);
 	}
+
+	WSACleanup();
 }
 
 const wchar_t* Application::L(const char* message) {

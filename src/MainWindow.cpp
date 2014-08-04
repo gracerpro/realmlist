@@ -161,6 +161,7 @@ void MainWindow::OnClose() {
 }
 
 void MainWindow::OnDestroy() {
+	m_project.Save();
 	PostQuitMessage(0);
 }
 
@@ -229,6 +230,8 @@ void MainWindow::InitListviews() {
 	col.pszText = TEXT("");
 	ListView_InsertColumn(hwndLvi, 0, &col);
 	ListView_InsertColumn(hwndLvi, 1, &col);
+	col.cx = 60;
+	ListView_InsertColumn(hwndLvi, 2, &col);
 	ListView_SetExtendedListViewStyle(hwndLvi, LVS_EX_FULLROWSELECT | LVS_EX_SINGLEROW);
 
 	HWND hwndLviClient = GetDlgItem(m_hWnd, IDC_LSV_CLIENT);
@@ -256,6 +259,17 @@ void MainWindow::FillServerListView() {
 	}
 }
 
+void MainWindow::RetrieveServersStatus() {
+	ServerList ServerList = m_project.GetServerList();
+	HWND hLviServer = GetDlgItem(m_hWnd, IDC_LSV_SERVER);
+
+	for (size_t i = 0; i < ServerList.size(); ++i) {
+		const stServer& server = ServerList[i];
+		AppString statusName = WowClient::GetServerStatusName(server.address);
+		ListView_SetItemText(hLviServer, i, 2, const_cast<LPWSTR>(statusName.c_str()));
+	}
+}
+
 void MainWindow::OnInitDialog(LPARAM param) {
 	Settings settings;
 
@@ -267,6 +281,7 @@ void MainWindow::OnInitDialog(LPARAM param) {
 	SetLocale(locale, false);
 
 	FillServerListView();
+	RetrieveServersStatus();
 
 	m_project.LoadClientDirList();
 	ClientDirList list = m_project.GetClientPathList();
@@ -361,6 +376,8 @@ void MainWindow::LoadLocaleText() {
 	ListView_SetColumn(hwndLvi, 0, &col);
 	col.pszText = const_cast<LPWSTR>(g_App.L("server_descr_col"));
 	ListView_SetColumn(hwndLvi, 1, &col);
+	col.pszText = TEXT("status");
+	ListView_SetColumn(hwndLvi, 2, &col);
 
 	HWND hwndLviClient = GetDlgItem(m_hWnd, IDC_LSV_CLIENT);
 	col.pszText = (PWCHAR)g_App.L("localization");
@@ -380,6 +397,7 @@ void MainWindow::SetTooltips() {
 	m_tooltip.AddTooltip(IDC_SERVER_ADD, m_hWnd, g_App.L("tt_server_add"));
 	m_tooltip.AddTooltip(IDC_SERVER_DEL, m_hWnd, g_App.L("tt_server_del"));
 	m_tooltip.AddTooltip(IDC_SERVER_SET, m_hWnd, g_App.L("tt_server_change"));
+	m_tooltip.AddTooltip(IDC_SERVER_FROM_CLIENT, m_hWnd, g_App.L("tt_from_client"));
 
 	m_tooltip.AddTooltip(IDC_FILE_RUN_WOW, m_hWnd, g_App.L("tt_run_wow"));
 }
@@ -473,12 +491,15 @@ void MainWindow::OnAddServer() {
 	LRESULT index = ListView_InsertItem(hwndLvi, &item);
 	TCHAR* pDescr = const_cast<TCHAR*>(server.description.c_str());
 	ListView_SetItemText(hwndLvi, index, 1, pDescr);
+	AppString statusName = WowClient::GetServerStatusName(server.address);
+	TCHAR* pStatusName = const_cast<TCHAR*>(statusName.c_str());
+	ListView_SetItemText(hwndLvi, index, 2, pStatusName);
 }
 
 void MainWindow::OnDelServer() {
 	TCHAR serverAddr[1024];
 
-	INT_PTR index = GetSelectedServer(serverAddr, 1024);
+	int index = GetSelectedServer(serverAddr, 1024);
 	if (index == -1) {
 		MessageBox(g_App.L("server_not_select"));
 		return;
@@ -517,7 +538,7 @@ void MainWindow::OnChangeServer() {
 	HWND hwndLvi = GetDlgItem(m_hWnd, IDC_LSV_SERVER);
 	LV_ITEM item = {0};
 
-	INT_PTR index = GetSelectedServer(serverAddr, 255);
+	int index = GetSelectedServer(serverAddr, 255);
 	if (index == -1) {
 		MessageBox(g_App.L("server_not_select"));
 		return;
@@ -576,7 +597,7 @@ void MainWindow::OnServerFromClient() {
 }
 
 void MainWindow::OnComboboxClientDirChangeSel() {
-	INT_PTR index = SendDlgItemMessage(m_hWnd, IDC_CB_CLIENT_DIR, CB_GETCURSEL, 0, 0);
+	LRESULT index = SendDlgItemMessage(m_hWnd, IDC_CB_CLIENT_DIR, CB_GETCURSEL, 0, 0);
 	m_project.SetSelectedClientDir(index);
 
 	HWND hwndLvi = GetDlgItem(m_hWnd, IDC_LSV_CLIENT);

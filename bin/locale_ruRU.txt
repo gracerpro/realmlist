@@ -20,6 +20,7 @@ tt_client_dir_find = Найти клиент Wow и добавить путь к
 tt_server_add = Добавить сервер в список
 tt_server_change = Изменить свойства сервера
 tt_server_del = Удалить сервер из списка
+tt_from_client = Добавить сервер из клиента
 tt_server_addr_write = Записать адрес сервера в файл realmlist.wpf
 tt_run_wow = Запустить WoW
 

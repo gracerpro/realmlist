@@ -50,6 +50,10 @@ enum eWowVersion {
 	WOW_VERSION_434
 };
 
+enum eWowPort {
+	WOW_PORT = 3724
+};
+
 typedef std::vector<AppString>      ClientDirList;
 typedef std::vector<stServer>       ServerList;
 typedef std::vector<stClientServer> LocaleServerList;
@@ -76,6 +80,9 @@ public:
 	bool SetCurrectServer(size_t indexClientDir, AppString locale, const AppString server);
 
 	size_t LoadLocaleServerAddr(LocaleServerList& list, size_t clientDirIndex);
+
+	// @return "open" or "close"
+	static AppString GetServerStatusName(const AppString& serverAddr);
 
 	eWowVersion GetWowVersion() const;
 
