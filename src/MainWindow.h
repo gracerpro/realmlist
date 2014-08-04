@@ -1,5 +1,5 @@
 /*
- * Realmlist -- manage your realmlists of World of Warcraft
+ * WowServerManager -- manage your servers of World of Warcraft
  * Copyright (C) 2014 SlaFF
 
  * This program is free software: you can redistribute it and/or modify
@@ -47,22 +47,23 @@ protected:
 	void OnDelClientDir();
 	void OnFindClientDir();
 
-	void OnAddRealmlist();
-	void OnDelRealmlist();
-	void OnDelAllRealmlist();
-	void OnChangeRealmlist();
-	void OnSetCurrentRealmlist();
+	void OnAddServer();
+	void OnDelServer();
+	void OnDelAllServers();
+	void OnChangeServer();
+	void OnSetCurrentServer();
+	void OnServerFromClient();
 
 	void OnHelpAbout();
 
 	void OnComboboxClientDirChangeSel();
-	void OnRealmlistLviChangeSel();
+	void OnServerLviChangeSel();
 
 	friend BOOL MainDlgProc(HWND, UINT, WPARAM, LPARAM);
 
 	void LoadLocaleText();
 	void SetDlgItemLocaleText(const char* message, UINT controlId, const char* defaultText = NULL);
-	void SetLocale(ApplicationLocale locale);
+	void SetLocale(ApplicationLocale locale, bool bUserSelect);
 
 private:
 	HWND m_hWnd;
@@ -70,11 +71,13 @@ private:
 	Tooltip   m_tooltip;
 	WindowImageManager m_imageManager;
 
-	INT_PTR GetSelectedRealmlist(TCHAR* realmlist, int bufferSize);
+	INT_PTR GetSelectedServer(TCHAR* serverUrl, int bufferSize);
 
 	void InitListviews();
 	void SetImages();
 	void SetTooltips();
+
+	void RemoveUnknownLocaleMenuItems();
 
 	// Truncate the file path to file dir
 	bool AddToClientDirCb(const TCHAR* szDir);

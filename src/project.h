@@ -1,5 +1,5 @@
 /*
- * Realmlist -- manage your realmlists of World of Warcraft
+ * WowServerManager -- manage your servers of World of Warcraft
  * Copyright (C) 2014 SlaFF
 
  * This program is free software: you can redistribute it and/or modify
@@ -23,24 +23,24 @@
 #include <vector>
 #include <tchar.h>
 
-struct stRealmlist {
-	AppString name;
+struct stServer {
+	AppString address;
 	AppString description;
 
-	bool operator == (const stRealmlist realmlist) const {
-		return name == realmlist.name;
+	bool operator == (const stServer server) const {
+		return address == server.address;
 	}
-	bool operator == (AppString realmlist) const {
-		return name == realmlist;
+	bool operator == (AppString serverAddr) const {
+		return address == serverAddr;
 	}
 };
 
-struct stClientRealmlist {
+struct stClientServer {
 	AppString locale;
-	AppString currentRealmlist;
+	AppString currentServer;
 
-	bool operator == (const stClientRealmlist realmlist) const {
-		return (currentRealmlist == realmlist.currentRealmlist) && (locale == realmlist.locale);
+	bool operator == (const stClientServer server) const {
+		return (currentServer == server.currentServer) && (locale == server.locale);
 	}
 };
 
@@ -50,9 +50,9 @@ enum eWowVersion {
 	WOW_VERSION_434
 };
 
-typedef std::vector<AppString>   ClientDirList;
-typedef std::vector<stRealmlist>       RealmlistList;
-typedef std::vector<stClientRealmlist> LocaleRealmlistList;
+typedef std::vector<AppString>      ClientDirList;
+typedef std::vector<stServer>       ServerList;
+typedef std::vector<stClientServer> LocaleServerList;
 
 class WowClient {
 public:
@@ -67,15 +67,15 @@ public:
 	bool DelClientDir(size_t index);
 	void SetSelectedClientDir(size_t index);
 
-	const RealmlistList& LoadRealmlist();
-	void SaveRealmlist();
-	bool AddRealmlist(const stRealmlist& realmlist);
-	bool DelRealmlist(const AppString& realmlist);
-	void DelAllRealmlist();
-	bool ChangeRealmlist(const AppString realmlistName, stRealmlist& realmlistNew);
-	bool SetCurrectRealmlist(size_t indexClientDir, AppString locale, const AppString realmlist);
+	const ServerList& LoadServers();
+	void SaveServer();
+	bool AddServer(const stServer& server);
+	bool DelServer(const AppString& server);
+	void DelAllServers();
+	bool ChangeServer(const AppString serverAddr, stServer& serverNew);
+	bool SetCurrectServer(size_t indexClientDir, AppString locale, const AppString server);
 
-	size_t LoadLocaleRealmlist(LocaleRealmlistList& list, size_t clientDirIndex);
+	size_t LoadLocaleServerAddr(LocaleServerList& list, size_t clientDirIndex);
 
 	eWowVersion GetWowVersion() const;
 
@@ -85,15 +85,14 @@ public:
 	const ClientDirList& GetClientPathList() const { return m_clientDirList; };
 	size_t GetClientDirCount() const { return m_clientDirList.size(); };
 
-	const RealmlistList& GetRealmlistList() const { return m_realmlistList; };
+	const ServerList& GetServerList() const { return m_serverList; };
 
-	const LocaleRealmlistList& GetLocaleRealmlistList() const { return m_localeRealmlistList; };
-	const size_t GetLocaleRealmlistCount() const { return m_localeRealmlistList.size(); };
+	const LocaleServerList& GetLocaleServerList() const { return m_LocaleServerList; };
+	const size_t GetLocaleServerCount() const { return m_LocaleServerList.size(); };
 
 private:
 	ClientDirList       m_clientDirList;
-	RealmlistList       m_realmlistList;
-	LocaleRealmlistList m_localeRealmlistList;
-
-	size_t m_selectedClientDirIndex;
+	ServerList          m_serverList;
+	LocaleServerList    m_LocaleServerList;
+	size_t              m_selectedClientDirIndex;
 };

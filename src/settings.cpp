@@ -1,5 +1,5 @@
 /*
- * Realmlist -- manage your realmlists of World of Warcraft
+ * WowServerManager -- manage your servers of World of Warcraft
  * Copyright (C) 2014 SlaFF
 
  * This program is free software: you can redistribute it and/or modify
@@ -29,46 +29,49 @@ Settings::~Settings() {
 
 static const TCHAR regSettingsPath[] = TEXT("Software\\Realmlist");
 
-bool Settings::SetParam(const SettingString name, const SettingString value) {
+bool Settings::SetParam(const TCHAR* name, const BYTE* data, DWORD size, DWORD type) {
 	DWORD dwDisposition = 0;
 	HKEY hKey = NULL;
 
 	if (ERROR_SUCCESS == RegCreateKeyEx(HKEY_CURRENT_USER, regSettingsPath, 0, NULL,
 		0, KEY_WRITE, NULL, &hKey, &dwDisposition)) {
 
-		const BYTE* data = reinterpret_cast<const BYTE*>(value.c_str());
-		DWORD cbData = static_cast<DWORD>(name.size());
-		if (ERROR_SUCCESS == RegSetValueEx(hKey, name.c_str(), 0, REG_SZ, data, cbData)) {
+		if (ERROR_SUCCESS == RegSetValueEx(hKey, name, 0, type, data, size)) {
 			return true;
 		}
+		RegCloseKey(hKey);
 	}
 
 	return false;
 }
 
-bool Settings::GetParam(const SettingString name, SettingString& value, SettingString defaultValue) {
+bool Settings::GetParam(const TCHAR* name, BYTE* value, DWORD size, DWORD type) {
 	DWORD dwDisposition = 0;
 	HKEY hKey = NULL;
 
 	if (ERROR_SUCCESS == RegCreateKeyEx(HKEY_CURRENT_USER, regSettingsPath, 0, NULL,
 		0, KEY_READ, NULL, &hKey, &dwDisposition)) {
 
-		const BYTE* data = reinterpret_cast<const BYTE*>(value.c_str());
-		DWORD cbData = static_cast<DWORD>(name.size());
-		if (ERROR_SUCCESS == RegSetValueEx(hKey, name.c_str(), 0, REG_SZ, data, cbData)) {
+		DWORD cbData = size;
+		if (ERROR_SUCCESS == RegQueryValueEx(hKey, name, 0, &type, value, &cbData)) {
 			return true;
 		}
+		RegCloseKey(hKey);
 	}
 
-	value = defaultValue;
-
-	return true;
+	return false;
 }
 
-int Settings::GetInt(const SettingString name) {
-	SettingString value;
+int Settings::GetInt(const TCHAR* name, int defaultValue) {
+	DWORD dw;
 
-	GetParam(name, value, TEXT("0"));
+	if (!GetParam(name, reinterpret_cast<BYTE*>(&dw), sizeof(DWORD), REG_DWORD)) {
+		dw = defaultValue;
+	}
 
-	return _tstoi(name.c_str());
+	return dw;
+}
+
+bool Settings::SetInt(const TCHAR* name, int value) {
+	return SetParam(name, reinterpret_cast<const BYTE*>(&value), sizeof(DWORD), REG_DWORD);
 }

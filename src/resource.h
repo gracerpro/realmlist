@@ -1,5 +1,5 @@
 /*
- * Realmlist -- manage your realmlists of World of Warcraft
+ * WowServerManager -- manage your servers of World of Warcraft
  * Copyright (C) 2014 SlaFF
 
  * This program is free software: you can redistribute it and/or modify
@@ -24,33 +24,43 @@
 
 #define IDD_ABOUT                 101
 
-#define IDC_LSV_REALMLIST         1001
+#define IDC_LSV_SERVER            1001
 #define IDC_CB_CLIENT_DIR         1002
-#define IDC_EDT_REALMLIST_DESCR   1003
-#define IDC_EDT_REALMLIST         1004
+#define IDC_EDT_SERVER_DESCR      1003
+#define IDC_EDT_SERVER_ADDR       1004
 #define IDC_LSV_CLIENT            1005
-#define IDC_STC_REALMLIST         1006
-#define IDC_STC_REALMLIST_DESCR   1007
+#define IDC_STC_SERVER_ADDR       1006
+#define IDC_STC_SERVER_DESCR      1007
 #define IDC_STC_CLIENT_DIR        1008
 
 #define IDC_FILE_EXIT             10000
 #define IDC_FILE_RUN_WOW          10001
 
-#define IDC_REALMLIST_ADD         10100
-#define IDC_REALMLIST_DEL         10101
-#define IDC_REALMLIST_CUR         10102
-#define IDC_REALMLIST_SET         10103
-#define IDC_REALMLIST_DEL_ALL     10104
-
+#define IDC_SERVER_ADD            10100
+#define IDC_SERVER_DEL            10101
+#define IDC_SERVER_CUR            10102
+#define IDC_SERVER_SET            10103
+#define IDC_SERVER_DEL_ALL        10104
+#define IDC_SERVER_FROM_CLIENT    10105
 
 #define IDC_DEL_CLIENT_DIR        10051
 #define IDC_FIND_CLIENT_DIR       10052
 
 #define IDC_HELP_ABOUT            10300
 
+// depend on ApplicationLocale defenotion, see LocaleManager.h
 #define IDC_LOCALE_NULL           10400
 #define IDC_LOCALE_ENUS           10401
 #define IDC_LOCALE_RURU           10402
+#define IDC_LOCALE_DEDE           10403
+#define IDC_LOCALE_FRFR           10404
+#define IDC_LOCALE_ENGB           10405
+#define IDC_LOCALE_ESES           10406
+#define IDC_LOCALE_ESMX           10407
+#define IDC_LOCALE_KOKR           10408
+#define IDC_LOCALE_PTBR           10409
+#define IDC_LOCALE_ZHCN           10410
+#define IDC_LOCALE_ZHTW           10411
 #define IDC_LOCALE_START          IDC_LOCALE_ENUS
 #define IDC_LOCALE_END            IDC_LOCALE_RURU
 

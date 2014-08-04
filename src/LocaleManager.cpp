@@ -1,5 +1,5 @@
 /*
-* Realmlist -- manage your realmlists of World of Warcraft
+* WowServerManager -- manage your servers of World of Warcraft
 * Copyright (C) 2014 SlaFF
 
 * This program is free software: you can redistribute it and/or modify
@@ -20,13 +20,12 @@
 #include <cctype>
 
 
-const TCHAR* LocaleManager::DEFAULT_LOCALE = TEXT("enUS");
+const ApplicationLocale LocaleManager::DEFAULT_LOCALE = LocaleEnUS;
 
 
 LocaleManager::LocaleManager() :
 m_locale(LocaleNull)
 {
-
 }
 
 LocaleManager::~LocaleManager() {
@@ -51,21 +50,16 @@ static char* trim(char* str) {
 	return strStart;
 }
 
-bool LocaleManager::SetLocale(ApplicationLocale locale) {
+bool LocaleManager::LoadLocale(ApplicationLocale locale) {
 	if (m_locale == locale) {
 		return true;
 	}
-
-	TCHAR* szLocale = TEXT("enUS"); // default
-
-	if (locale == LocaleRuRU) {
-		szLocale = TEXT("ruRU");
+	if (locale == DEFAULT_LOCALE) {
+		m_messages.clear();
 	}
 
-	AppString fileName = m_localeDir;
-	fileName += TEXT("locale_");
-	fileName += szLocale;
-	fileName += TEXT(".txt");
+	auto& messages = locale == LocaleEnUS ? m_messagesDefault : m_messages;
+	AppString fileName = GetLocaleFilePath(locale);
 
 	std::ifstream stream;
 	stream.open(fileName, std::ios::in);
@@ -91,21 +85,32 @@ bool LocaleManager::SetLocale(ApplicationLocale locale) {
 
 			char* message = trim(keyStart); // always enUS
 			char* localeMessage = trim(valueStart); // utf8
+
 			// TODO: replace \n\t\r\b\a etc.
 			int writenLen = MultiByteToWideChar(CP_UTF8, 0, localeMessage, -1, wszLocaleMessage, lineSize);
 			wszLocaleMessage[writenLen] = 0;
-			m_messages[message] = wszLocaleMessage;
+			messages[message] = wszLocaleMessage;
 		}
 	} while (stream.good());
 
 	stream.close();
 
+	m_locale = locale;
+
 	return true;
 }
 
-const wchar_t* LocaleManager::GetText(const char* message, ...) {
+bool LocaleManager::LoadDefaultLocale() {
+	return LoadLocale(DEFAULT_LOCALE);
+}
+
+const wchar_t* LocaleManager::GetText(const char* message) const {
 	auto iterFind = m_messages.find(message);
 	if (iterFind != m_messages.end()) {
+		return (*iterFind).second.c_str();
+	}
+	iterFind = m_messagesDefault.find(message);
+	if (iterFind != m_messagesDefault.end()) {
 		return (*iterFind).second.c_str();
 	}
 
@@ -119,4 +124,32 @@ void LocaleManager::SetLocaleDir(const TCHAR* dir) {
 	}
 
 	m_localeDir = dir;
+}
+
+const TCHAR* LocaleManager::GetLocaleName(ApplicationLocale locale) {
+	switch (locale)
+	{
+	case LocaleEnUS: return TEXT("enUS");
+	case LocaleRuRU: return TEXT("ruRU");
+	case LocaleDeDE: return TEXT("deDE");
+	case LocaleFrFR: return TEXT("frFR");
+	case LocaleEnGB: return TEXT("enGB");
+	case LocaleEsES: return TEXT("esES");
+	case LocaleEsMX: return TEXT("esMX");
+	case LocaleKoKR: return TEXT("koKR");
+	case LocalePtBR: return TEXT("ptBR");
+	case LocaleZhCN: return TEXT("zhCN");
+	case LocaleZhTW: return TEXT("zhTW");
+	default:
+		return TEXT("null");
+	}
+}
+
+AppString LocaleManager::GetLocaleFilePath(ApplicationLocale locale) {
+	AppString filePath = m_localeDir;
+	filePath += TEXT("locale_");
+	filePath += GetLocaleName(locale);
+	filePath += TEXT(".txt");
+
+	return filePath;
 }

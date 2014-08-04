@@ -1,5 +1,5 @@
 /*
- * Realmlist -- manage your realmlists of World of Warcraft
+ * WowServerManager -- manage your servers of World of Warcraft
  * Copyright (C) 2014 SlaFF
 
  * This program is free software: you can redistribute it and/or modify
@@ -19,6 +19,7 @@
 
 #include <tchar.h>
 #include <string>
+#include <Windows.h>
 
 typedef std::basic_string<TCHAR> SettingString;
 
@@ -27,10 +28,12 @@ public:
 	Settings();
 	~Settings();
 
-	bool SetParam(const SettingString name, const SettingString value);
-	bool GetParam(const SettingString name, SettingString& value, SettingString defaultValue = NULL);
+	int GetInt(const TCHAR* name, int defaultValue = 0);
+	bool SetInt(const TCHAR* name, int value);
 
-	int GetInt(const SettingString name);
+protected:
+	bool SetParam(const TCHAR* name, const BYTE* data, DWORD size, DWORD type);
+	bool GetParam(const TCHAR* name, BYTE* data, DWORD size, DWORD type);
 
 private:
 

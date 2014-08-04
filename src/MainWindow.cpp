@@ -1,5 +1,5 @@
 /*
- * Realmlist -- manage your realmlists of World of Warcraft
+ * WowServerManager -- manage your servers of World of Warcraft
  * Copyright (C) 2014 SlaFF
 
  * This program is free software: you can redistribute it and/or modify
@@ -36,7 +36,7 @@ static inline INT_PTR GetSelectedIndexLvi(HWND hwndLvi) {
 }
 
 void SetSelectedIndexLvi(HWND hwndParent, int index) {
-	HWND hwndLvi = GetDlgItem(hwndParent, IDC_LSV_REALMLIST);
+	HWND hwndLvi = GetDlgItem(hwndParent, IDC_LSV_SERVER);
 	ListView_SetItemState(hwndParent, index, LVIS_FOCUSED | LVIS_SELECTED, 0);
 }
 
@@ -110,20 +110,23 @@ void MainWindow::OnCommand(int id, int notifyCode, HWND hwndFrom) {
 	case IDC_FIND_CLIENT_DIR:
 		OnFindClientDir();
 		break;
-	case IDC_REALMLIST_ADD:
-		OnAddRealmlist();
+	case IDC_SERVER_ADD:
+		OnAddServer();
 		break;
-	case IDC_REALMLIST_DEL:
-		OnDelRealmlist();
+	case IDC_SERVER_DEL:
+		OnDelServer();
 		break;
-	case IDC_REALMLIST_DEL_ALL:
-		OnDelAllRealmlist();
+	case IDC_SERVER_DEL_ALL:
+		OnDelAllServers();
 		break;
-	case IDC_REALMLIST_SET:
-		OnChangeRealmlist();
+	case IDC_SERVER_SET:
+		OnChangeServer();
 		break;
-	case IDC_REALMLIST_CUR:
-		OnSetCurrentRealmlist();
+	case IDC_SERVER_CUR:
+		OnSetCurrentServer();
+		break;
+	case IDC_SERVER_FROM_CLIENT:
+		OnServerFromClient();
 		break;
 	case IDC_HELP_ABOUT:
 		OnHelpAbout();
@@ -139,16 +142,16 @@ void MainWindow::OnCommand(int id, int notifyCode, HWND hwndFrom) {
 	case IDC_LOCALE_RURU:
 		ApplicationLocale locale;
 		locale = (ApplicationLocale)(id - IDC_LOCALE_NULL);
-		SetLocale(locale);
+		SetLocale(locale, true);
 		break;
 	}
 }
 
 void MainWindow::OnNotify(int idCtrl, LPNMHDR lpNmhdr) {
-	if (idCtrl == IDC_LSV_REALMLIST && lpNmhdr->code == LVN_ITEMCHANGED) {
+	if (idCtrl == IDC_LSV_SERVER && lpNmhdr->code == LVN_ITEMCHANGED) {
 		NM_LISTVIEW* pNmListView = (NM_LISTVIEW*)lpNmhdr;
 		if (pNmListView->uNewState == 3) { // TODO: hack
-			OnRealmlistLviChangeSel();
+			OnServerLviChangeSel();
 		}
 	}
 }
@@ -158,15 +161,6 @@ void MainWindow::OnClose() {
 }
 
 void MainWindow::OnDestroy() {
-	Settings settings;
-
-	// save selected client dir
-//	settings.SetParam(TEXT("selected_client_dir"), TEXT(""));
-	// save selected realmlist
-//	settings.SetParam(TEXT("selected_realmlist"), TEXT(""));
-
-	m_project.Save();
-
 	PostQuitMessage(0);
 }
 
@@ -189,19 +183,19 @@ void MainWindow::OnSize(int cx, int cy, INT_PTR flags) {
 	GetWindowRect(hwndBtnRunWow, &rc);
 	MoveWindow(hwndBtnRunWow, cx - (rc.right - rc.left) - 2, 2, rc.right - rc.left, rc.bottom - rc.top, TRUE);
 
-	HWND hwndEdtRealmlistDestr = GetDlgItem(m_hWnd, IDC_EDT_REALMLIST_DESCR);
-	GetWindowRect(hwndEdtRealmlistDestr, &rc);
+	HWND hwndEdtServerAddrDestr = GetDlgItem(m_hWnd, IDC_EDT_SERVER_DESCR);
+	GetWindowRect(hwndEdtServerAddrDestr, &rc);
 	pt.x = rc.left;
 	pt.y = rc.top;
 	ScreenToClient(m_hWnd, &pt);
-	MoveWindow(hwndEdtRealmlistDestr, pt.x, pt.y, cx - pt.x - 5, rc.bottom - rc.top, TRUE);
+	MoveWindow(hwndEdtServerAddrDestr, pt.x, pt.y, cx - pt.x - 5, rc.bottom - rc.top, TRUE);
 
-	HWND hwndLviRealmlist = GetDlgItem(m_hWnd, IDC_LSV_REALMLIST);
-	MoveWindow(hwndLviRealmlist, 0, 230, cx, cy - 120, TRUE);
+	HWND hwndLviServer = GetDlgItem(m_hWnd, IDC_LSV_SERVER);
+	MoveWindow(hwndLviServer, 0, 230, cx, cy - 120, TRUE);
 }
 
 int MainWindow::MessageBox(const TCHAR* message, int flags) {
-	return ::MessageBox(m_hWnd, message, TEXT("Realmlist"), flags);
+	return ::MessageBox(m_hWnd, message, TEXT("Message"), flags);
 }
 
 static BOOL LoadCurrectClientDir(TCHAR* szClientPath, int size) {
@@ -228,14 +222,14 @@ static BOOL LoadCurrectClientDir(TCHAR* szClientPath, int size) {
 
 void MainWindow::InitListviews() {
 	LV_COLUMN col = { 0 };
-	HWND hwndLvi = GetDlgItem(m_hWnd, IDC_LSV_REALMLIST);
+	HWND hwndLvi = GetDlgItem(m_hWnd, IDC_LSV_SERVER);
 
 	col.mask = LVCF_TEXT | LVCF_WIDTH;
 	col.cx = 200;
-	col.pszText = (PWCHAR)g_App.L("realmlist");
+	col.pszText = (PWCHAR)g_App.L("server_addr");
 	col.cchTextMax = static_cast<int>(_tcslen(col.pszText));
 	ListView_InsertColumn(hwndLvi, 0, &col);
-	col.pszText = (PWCHAR)g_App.L("realmlist_descr_col");
+	col.pszText = (PWCHAR)g_App.L("server_descr_col");
 	col.cchTextMax = static_cast<int>(_tcslen(col.pszText));
 	ListView_InsertColumn(hwndLvi, 1, &col);
 
@@ -248,7 +242,7 @@ void MainWindow::InitListviews() {
 	col.cchTextMax = static_cast<int>(_tcslen(col.pszText));
 	ListView_InsertColumn(hwndLviClient, 0, &col);
 	col.cx = 200;
-	col.pszText = (PWCHAR)g_App.L("realmlist");
+	col.pszText = (PWCHAR)g_App.L("server_addr");
 	col.cchTextMax = static_cast<int>(_tcslen(col.pszText));
 	ListView_InsertColumn(hwndLviClient, 1, &col);
 
@@ -256,20 +250,27 @@ void MainWindow::InitListviews() {
 }
 
 void MainWindow::OnInitDialog(LPARAM param) {
+	Settings settings;
+
+	m_tooltip.Create(m_hWnd);
+	m_tooltip.Activate();
+	ApplicationLocale locale = static_cast<ApplicationLocale>(settings.GetInt(TEXT("locale")));
+	SetLocale(locale, false);
+
 	LV_ITEM item = {0};
 
 	InitListviews();
 
-	HWND hwndLvi = GetDlgItem(m_hWnd, IDC_LSV_REALMLIST);
-	RealmlistList realmlistList = m_project.LoadRealmlist();
-	for (size_t i = 0; i < realmlistList.size(); ++i) {
-		const stRealmlist& realmlist = realmlistList[i];
+	HWND hwndLvi = GetDlgItem(m_hWnd, IDC_LSV_SERVER);
+	ServerList ServerList = m_project.LoadServers();
+	for (size_t i = 0; i < ServerList.size(); ++i) {
+		const stServer& server = ServerList[i];
 
-		item.pszText = const_cast<TCHAR*>(realmlist.name.c_str());
+		item.pszText = const_cast<TCHAR*>(server.address.c_str());
 		item.mask = LVIF_TEXT;
 		item.iItem = static_cast<int>(i);
 		LRESULT index = ListView_InsertItem(hwndLvi, &item);
-		TCHAR* pDescr = const_cast<TCHAR*>(realmlist.description.c_str());
+		TCHAR* pDescr = const_cast<TCHAR*>(server.description.c_str());
 		ListView_SetItemText(hwndLvi, index, 1, pDescr);
 	}
 
@@ -286,10 +287,8 @@ void MainWindow::OnInitDialog(LPARAM param) {
 		AddToClientDirCb(buf);
 	}
 
-	Settings settings;
-
-	int indexRealmlist = settings.GetInt(TEXT("selected_realmlist"));
-	SetSelectedIndexLvi(m_hWnd, indexRealmlist);
+	int indexServer = settings.GetInt(TEXT("selected_server"));
+	SetSelectedIndexLvi(m_hWnd, indexServer);
 
 	int index = settings.GetInt(TEXT("selected_client_dir"));
 	SendDlgItemMessage(m_hWnd, IDC_CB_CLIENT_DIR, CB_SETCURSEL, index, 0);
@@ -297,9 +296,22 @@ void MainWindow::OnInitDialog(LPARAM param) {
 
 	SetImages();
 
-	SetLocale(LocaleRuRU);
+	RemoveUnknownLocaleMenuItems();
 
 	DragAcceptFiles(m_hWnd, TRUE);
+}
+
+void MainWindow::RemoveUnknownLocaleMenuItems() {
+	HMENU hMenu = GetMenu(m_hWnd);
+
+	for (size_t i = LocaleNull + 1; i < LocaleMax; ++i) {
+		ApplicationLocale locale = static_cast<ApplicationLocale>(i);
+		AppString filePath = g_App.GetLocaleManager().GetLocaleFilePath(locale);
+		if (!IsFile(filePath.c_str())) {
+			UINT id = IDC_LOCALE_NULL + i;
+			RemoveMenu(hMenu, id, 0);
+		}
+	}
 }
 
 void MainWindow::SetDlgItemLocaleText(const char* message, UINT controlId, const char* defaultText) {
@@ -310,27 +322,35 @@ void MainWindow::SetDlgItemLocaleText(const char* message, UINT controlId, const
 }
 
 void MainWindow::LoadLocaleText() {
-	SetDlgItemLocaleText("realmlist", IDC_STC_REALMLIST);
-	SetDlgItemLocaleText("realmlist_descr_col", IDC_STC_REALMLIST_DESCR);
+	// buttons
+	SetDlgItemLocaleText("server_addr", IDC_STC_SERVER_ADDR);
+	SetDlgItemLocaleText("server_descr_col", IDC_STC_SERVER_DESCR);
 	SetDlgItemLocaleText("client_dir", IDC_STC_CLIENT_DIR);
+	SetDlgItemLocaleText("m_main_window_from_client", IDC_SERVER_FROM_CLIENT);
 
 	// menu
 	HMENU hMenu = GetMenu(m_hWnd);
 	if (hMenu) {
 		// TODO: do function...
 		ModifyMenu(hMenu, 0, MF_BYPOSITION, 0, g_App.L("common_file"));
-		ModifyMenu(hMenu, 1, MF_BYPOSITION, 1, g_App.L("realmlist"));
+		ModifyMenu(hMenu, 1, MF_BYPOSITION, 1, g_App.L("server_addr"));
 		ModifyMenu(hMenu, 2, MF_BYPOSITION, 2, g_App.L("m_client_dir"));
 		ModifyMenu(hMenu, 3, MF_BYPOSITION, 3, g_App.L("common_help"));
+		HMENU hSubMenu = GetSubMenu(hMenu, 3);
+		int posLocalization = 1;
+		ModifyMenu(hSubMenu, posLocalization, MF_BYPOSITION, 0, g_App.L("common_language"));
+		ModifyMenu(hMenu, IDC_LOCALE_ENUS, 0, IDC_LOCALE_ENUS, g_App.L("common_language_enus"));
+		ModifyMenu(hMenu, IDC_LOCALE_RURU, 0, IDC_LOCALE_RURU, g_App.L("common_language_ruru"));
 
 		ModifyMenu(hMenu, IDC_FILE_RUN_WOW, 0, IDC_FILE_RUN_WOW, g_App.L("m_main_window_run_wow"));
 		ModifyMenu(hMenu, IDC_FILE_EXIT, 0, IDC_FILE_EXIT, g_App.L("m_main_window_exit"));
 
-		ModifyMenu(hMenu, IDC_REALMLIST_ADD, 0, IDC_REALMLIST_ADD, g_App.L("common_add"));
-		ModifyMenu(hMenu, IDC_REALMLIST_DEL, 0, IDC_REALMLIST_DEL, g_App.L("common_del"));
-		ModifyMenu(hMenu, IDC_REALMLIST_SET, 0, IDC_REALMLIST_SET, g_App.L("common_change"));
-		ModifyMenu(hMenu, IDC_REALMLIST_CUR, 0, IDC_REALMLIST_CUR, g_App.L("m_realmlist_write"));
-		ModifyMenu(hMenu, IDC_REALMLIST_DEL_ALL, 0, IDC_REALMLIST_DEL_ALL, g_App.L("common_del_all"));
+		ModifyMenu(hMenu, IDC_SERVER_ADD, 0, IDC_SERVER_ADD, g_App.L("common_add"));
+		ModifyMenu(hMenu, IDC_SERVER_DEL, 0, IDC_SERVER_DEL, g_App.L("common_del"));
+		ModifyMenu(hMenu, IDC_SERVER_SET, 0, IDC_SERVER_SET, g_App.L("common_change"));
+		ModifyMenu(hMenu, IDC_SERVER_CUR, 0, IDC_SERVER_CUR, g_App.L("m_server_write"));
+		ModifyMenu(hMenu, IDC_SERVER_DEL_ALL, 0, IDC_SERVER_DEL_ALL, g_App.L("common_del_all"));
+		ModifyMenu(hMenu, IDC_SERVER_FROM_CLIENT, 0, IDC_SERVER_FROM_CLIENT, g_App.L("m_main_window_from_client"));
 
 		ModifyMenu(hMenu, IDC_DEL_CLIENT_DIR, 0, IDC_DEL_CLIENT_DIR, g_App.L("common_del"));
 		ModifyMenu(hMenu, IDC_FIND_CLIENT_DIR, 0, IDC_FIND_CLIENT_DIR, g_App.L("m_client_dir_find"));
@@ -338,34 +358,33 @@ void MainWindow::LoadLocaleText() {
 		ModifyMenu(hMenu, IDC_HELP_ABOUT, 0, IDC_HELP_ABOUT, g_App.L("m_about"));
 	}
 
+	// ListView columns
+	// ...
+
 	// set main title
 	SetWindowText(m_hWnd, g_App.L("main_window_title"));
 }
 
 void MainWindow::SetTooltips() {
-	m_tooltip.Create(NULL);
-
 	m_tooltip.AddTooltip(IDC_DEL_CLIENT_DIR, m_hWnd, g_App.L("tt_client_dir_del"));
 	m_tooltip.AddTooltip(IDC_FIND_CLIENT_DIR, m_hWnd, g_App.L("tt_client_dir_find"));
 
-	m_tooltip.AddTooltip(IDC_REALMLIST_CUR, m_hWnd, g_App.L("tt_realmlist_write"));
-	m_tooltip.AddTooltip(IDC_REALMLIST_ADD, m_hWnd, g_App.L("tt_realmlist_write"));
-	m_tooltip.AddTooltip(IDC_REALMLIST_DEL, m_hWnd, g_App.L("tt_realmlist_del"));
-	m_tooltip.AddTooltip(IDC_REALMLIST_SET, m_hWnd, g_App.L("tt_realmlist_change"));
+	m_tooltip.AddTooltip(IDC_SERVER_CUR, m_hWnd, g_App.L("tt_server_addr_write"));
+	m_tooltip.AddTooltip(IDC_SERVER_ADD, m_hWnd, g_App.L("tt_server_add"));
+	m_tooltip.AddTooltip(IDC_SERVER_DEL, m_hWnd, g_App.L("tt_server_del"));
+	m_tooltip.AddTooltip(IDC_SERVER_SET, m_hWnd, g_App.L("tt_server_change"));
 
 	m_tooltip.AddTooltip(IDC_FILE_RUN_WOW, m_hWnd, g_App.L("tt_run_wow"));
-
-	m_tooltip.Activate();
 }
 
 void MainWindow::SetImages() {
 	WindowImageItem arrImage[] = {
 		{ IDC_FILE_RUN_WOW, IDR_BITMAP_WOW16, ImageFormatBmp },
-		{ IDC_REALMLIST_SET, IDR_OK16, ImageFormatPng },
-		{ IDC_REALMLIST_ADD, IDR_ADD16, ImageFormatPng },
-		{ IDC_REALMLIST_DEL, IDR_DELETE16, ImageFormatPng },
+		{ IDC_SERVER_SET, IDR_OK16, ImageFormatPng },
+		{ IDC_SERVER_ADD, IDR_ADD16, ImageFormatPng },
+		{ IDC_SERVER_DEL, IDR_DELETE16, ImageFormatPng },
 		{ IDC_DEL_CLIENT_DIR, IDR_DELETE16, ImageFormatPng },
-		{ IDC_REALMLIST_CUR, IDR_WRITE16, ImageFormatPng },
+		{ IDC_SERVER_CUR, IDR_WRITE16, ImageFormatPng },
 	};
 	m_imageManager.LoadButtonImagesFromResource(m_hWnd, arrImage, sizeof(arrImage) / sizeof(arrImage[0]));
 
@@ -420,98 +439,98 @@ void MainWindow::OnFindClientDir() {
 	}
 }
 
-void MainWindow::OnAddRealmlist() {
-	stRealmlist realmlist;
+void MainWindow::OnAddServer() {
+	stServer server;
 	TCHAR buf[1024];
 
-	if (!GetDlgItemText(m_hWnd, IDC_EDT_REALMLIST, buf, 1024)) {
-		MessageBox(g_App.L("realmlist_not_write"));
+	if (!GetDlgItemText(m_hWnd, IDC_EDT_SERVER_ADDR, buf, 1024)) {
+		MessageBox(g_App.L("server_not_write"));
 		return;
 	}
-	realmlist.name = buf;
+	server.address = buf;
 
-	GetDlgItemText(m_hWnd, IDC_EDT_REALMLIST_DESCR, buf, 1024);
-	realmlist.description = buf;
+	GetDlgItemText(m_hWnd, IDC_EDT_SERVER_DESCR, buf, 1024);
+	server.description = buf;
 
-	if (!m_project.AddRealmlist(realmlist)) {
-		MessageBox(g_App.L("realmlist_add_fail"));
+	if (!m_project.AddServer(server)) {
+		MessageBox(g_App.L("server_add_fail"));
 		return;
 	}
 	// TODO: function
-	HWND hwndLvi = GetDlgItem(m_hWnd, IDC_LSV_REALMLIST);
+	HWND hwndLvi = GetDlgItem(m_hWnd, IDC_LSV_SERVER);
 	LV_ITEM item = {0};
 
-	item.pszText = const_cast<TCHAR*>(realmlist.name.c_str());
+	item.pszText = const_cast<TCHAR*>(server.address.c_str());
 	item.mask = LVIF_TEXT;
 	item.iItem = ListView_GetItemCount(hwndLvi);
 	LRESULT index = ListView_InsertItem(hwndLvi, &item);
-	TCHAR* pDescr = const_cast<TCHAR*>(realmlist.description.c_str());
+	TCHAR* pDescr = const_cast<TCHAR*>(server.description.c_str());
 	ListView_SetItemText(hwndLvi, index, 1, pDescr);
 }
 
-void MainWindow::OnDelRealmlist() {
-	TCHAR realmlist[1024];
+void MainWindow::OnDelServer() {
+	TCHAR serverAddr[1024];
 
-	INT_PTR index = GetSelectedRealmlist(realmlist, 1024);
+	INT_PTR index = GetSelectedServer(serverAddr, 1024);
 	if (index == -1) {
-		MessageBox(g_App.L("realmlist_not_select"));
+		MessageBox(g_App.L("server_not_select"));
 		return;
 	}
 	if (IDOK != MessageBox(g_App.L("confirm_delete"), MB_OKCANCEL | MB_ICONINFORMATION)) {
 		return;
 	}
-	if (m_project.DelRealmlist(realmlist)) {
-		HWND hwndLvi = GetDlgItem(m_hWnd, IDC_LSV_REALMLIST);
+	if (m_project.DelServer(serverAddr)) {
+		HWND hwndLvi = GetDlgItem(m_hWnd, IDC_LSV_SERVER);
 		ListView_DeleteItem(hwndLvi, index);
 	}
 }
 
-void MainWindow::OnDelAllRealmlist() {
+void MainWindow::OnDelAllServers() {
 	if (IDOK == MessageBox(g_App.L("confirm_delete"), MB_ICONQUESTION | MB_OKCANCEL)) {
-		m_project.DelAllRealmlist();
-		SendDlgItemMessage(m_hWnd, IDC_LSV_REALMLIST, LVM_DELETEALLITEMS, 0, 0);
+		m_project.DelAllServers();
+		SendDlgItemMessage(m_hWnd, IDC_LSV_SERVER, LVM_DELETEALLITEMS, 0, 0);
 	}
 }
 
-void MainWindow::OnChangeRealmlist() {
-	stRealmlist realmlist;
+void MainWindow::OnChangeServer() {
+	stServer server;
 	TCHAR buf[1024];
-	TCHAR realmlistName[255];
+	TCHAR serverAddr[255];
 
-	if (!GetDlgItemText(m_hWnd, IDC_EDT_REALMLIST, buf, 1024)) {
-		MessageBox(g_App.L("realmlist_not_write"));
+	if (!GetDlgItemText(m_hWnd, IDC_EDT_SERVER_ADDR, buf, 1024)) {
+		MessageBox(g_App.L("server_not_write"));
 		return;
 	}
-	realmlist.name = buf;
+	server.address = buf;
 
-	GetDlgItemText(m_hWnd, IDC_EDT_REALMLIST_DESCR, buf, 1024);
-	realmlist.description = buf;
+	GetDlgItemText(m_hWnd, IDC_EDT_SERVER_DESCR, buf, 1024);
+	server.description = buf;
 
 	// TODO: function
-	HWND hwndLvi = GetDlgItem(m_hWnd, IDC_LSV_REALMLIST);
+	HWND hwndLvi = GetDlgItem(m_hWnd, IDC_LSV_SERVER);
 	LV_ITEM item = {0};
 
-	INT_PTR index = GetSelectedRealmlist(realmlistName, 255);
+	INT_PTR index = GetSelectedServer(serverAddr, 255);
 	if (index == -1) {
-		MessageBox(g_App.L("realmlist_not_select"));
+		MessageBox(g_App.L("server_not_select"));
 		return;
 	}
-	if (!m_project.ChangeRealmlist(realmlistName, realmlist)) {
-		MessageBox(g_App.L("realmlist_change_fail"));
+	if (!m_project.ChangeServer(serverAddr, server)) {
+		MessageBox(g_App.L("server_change_fail"));
 		return;
 	}
 
-	TCHAR* pName = const_cast<TCHAR*>(realmlist.name.c_str());
+	TCHAR* pName = const_cast<TCHAR*>(server.address.c_str());
 	ListView_SetItemText(hwndLvi, index, 0, pName);
-	TCHAR* pDescr = const_cast<TCHAR*>(realmlist.description.c_str());
+	TCHAR* pDescr = const_cast<TCHAR*>(server.description.c_str());
 	ListView_SetItemText(hwndLvi, index, 1, pDescr);
 }
 
-void MainWindow::OnSetCurrentRealmlist() {
-	HWND hwndLviRealmlist = GetDlgItem(m_hWnd, IDC_LSV_REALMLIST);
-	LRESULT realmlistIndex = GetSelectedIndexLvi(hwndLviRealmlist);
-	if (realmlistIndex == -1) {
-		MessageBox(g_App.L("realmlist_not_select"));
+void MainWindow::OnSetCurrentServer() {
+	HWND hwndLviServer = GetDlgItem(m_hWnd, IDC_LSV_SERVER);
+	LRESULT serverIndex = GetSelectedIndexLvi(hwndLviServer);
+	if (serverIndex == -1) {
+		MessageBox(g_App.L("server_not_select"));
 		return;
 	}
 	HWND hwndLviLocale = GetDlgItem(m_hWnd, IDC_LSV_CLIENT);
@@ -526,12 +545,27 @@ void MainWindow::OnSetCurrentRealmlist() {
 		return;
 	}
 
-	TCHAR realmlist[200], locale[100];
+	TCHAR serverAddr[200], locale[100];
 	ListView_GetItemText(hwndLviLocale, localeIndex, 0, locale, 100);
-	ListView_GetItemText(hwndLviRealmlist, realmlistIndex, 0, realmlist, 200);
-	if (m_project.SetCurrectRealmlist(selectedClientWowDir, locale, realmlist)) {
-		ListView_SetItemText(hwndLviLocale, localeIndex, 1, realmlist);
+	ListView_GetItemText(hwndLviServer, serverIndex, 0, serverAddr, 200);
+	if (m_project.SetCurrectServer(selectedClientWowDir, locale, serverAddr)) {
+		ListView_SetItemText(hwndLviLocale, localeIndex, 1, serverAddr);
 	}
+}
+
+void MainWindow::OnServerFromClient() {
+	HWND hwndLviClient = GetDlgItem(m_hWnd, IDC_LSV_CLIENT);
+	LRESULT localeIndex = GetSelectedIndexLvi(hwndLviClient);
+	if (localeIndex == -1) {
+		MessageBox(g_App.L("localization_not_select"));
+		return;
+	}
+
+	TCHAR serverAddr[200];
+	ListView_GetItemText(hwndLviClient, localeIndex, 1, serverAddr, 200);
+
+	SetDlgItemText(m_hWnd, IDC_EDT_SERVER_ADDR, serverAddr);
+	OnAddServer();
 }
 
 void MainWindow::OnComboboxClientDirChangeSel() {
@@ -541,48 +575,48 @@ void MainWindow::OnComboboxClientDirChangeSel() {
 	HWND hwndLvi = GetDlgItem(m_hWnd, IDC_LSV_CLIENT);
 	ListView_DeleteAllItems(hwndLvi);
 
-	LocaleRealmlistList list;
-	m_project.LoadLocaleRealmlist(list, index);
+	LocaleServerList list;
+	m_project.LoadLocaleServerAddr(list, index);
 
 	for (size_t i = 0; i < list.size(); ++i) {
-		stClientRealmlist& cocaleRealmlist = list[i];
+		stClientServer& localeServer = list[i];
 
 		LV_ITEM item = {0};
 
-		item.pszText = const_cast<TCHAR*>(cocaleRealmlist.locale.c_str());
+		item.pszText = const_cast<TCHAR*>(localeServer.locale.c_str());
 		item.mask = LVIF_TEXT;
 		item.iItem = static_cast<int>(i);
 		LRESULT index = ListView_InsertItem(hwndLvi, &item);
-		TCHAR* pDescr = const_cast<TCHAR*>(cocaleRealmlist.currentRealmlist.c_str());
+		TCHAR* pDescr = const_cast<TCHAR*>(localeServer.currentServer.c_str());
 		ListView_SetItemText(hwndLvi, index, 1, pDescr);
 	}
 }
 
-INT_PTR MainWindow::GetSelectedRealmlist(TCHAR* realmlist, int bufferSize) {
-	realmlist[0] = 0;
-	HWND hwndLvi = GetDlgItem(m_hWnd, IDC_LSV_REALMLIST);
+INT_PTR MainWindow::GetSelectedServer(TCHAR* serverUrl, int bufferSize) {
+	serverUrl[0] = 0;
+	HWND hwndLvi = GetDlgItem(m_hWnd, IDC_LSV_SERVER);
 	INT_PTR index = GetSelectedIndexLvi(hwndLvi);
 	if (index < 0) {
 		return -1;
 	}
-	ListView_GetItemText(hwndLvi, index, 0, realmlist, bufferSize);
+	ListView_GetItemText(hwndLvi, index, 0, serverUrl, bufferSize);
 
 	return index;
 }
 
-void MainWindow::OnRealmlistLviChangeSel() {
-	TCHAR realmlist[200];
+void MainWindow::OnServerLviChangeSel() {
+	TCHAR serverAddr[200];
 	TCHAR description[200];
-	HWND hwndLvi = GetDlgItem(m_hWnd, IDC_LSV_REALMLIST);
+	HWND hwndLvi = GetDlgItem(m_hWnd, IDC_LSV_SERVER);
 
 	INT_PTR index = GetSelectedIndexLvi(hwndLvi);
 	if (index < 0) {
 		return;
 	}
-	ListView_GetItemText(hwndLvi, index, 0, realmlist, 200);
+	ListView_GetItemText(hwndLvi, index, 0, serverAddr, 200);
 	ListView_GetItemText(hwndLvi, index, 1, description, 200);
-	SetDlgItemText(m_hWnd, IDC_EDT_REALMLIST, realmlist);
-	SetDlgItemText(m_hWnd, IDC_EDT_REALMLIST_DESCR, description);
+	SetDlgItemText(m_hWnd, IDC_EDT_SERVER_ADDR, serverAddr);
+	SetDlgItemText(m_hWnd, IDC_EDT_SERVER_DESCR, description);
 }
 
 bool MainWindow::AddToClientDirCb(const TCHAR* szDir) {
@@ -652,8 +686,14 @@ void MainWindow::OnMinMaxInfo(LPMINMAXINFO lpMinMaxInfo) {
 	lpMinMaxInfo->ptMinTrackSize.y = 350;
 }
 
-void MainWindow::SetLocale(ApplicationLocale locale) {
-	g_App.GetLocaleManager().SetLocale(locale);
+void MainWindow::SetLocale(ApplicationLocale locale, bool bUserSelect) {
+	g_App.GetLocaleManager().LoadLocale(locale);
+
+	if (bUserSelect) {
+		Settings settings;
+
+		settings.SetInt(TEXT("locale"), locale);
+	}
 
 	LoadLocaleText();
 	SetTooltips();

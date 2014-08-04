@@ -1,5 +1,5 @@
 /*
- * Realmlist -- manage your realmlists of World of Warcraft
+ * WowServerManager -- manage your servers of World of Warcraft
  * Copyright (C) 2014 SlaFF
 
  * This program is free software: you can redistribute it and/or modify
@@ -40,17 +40,13 @@ bool Application::InitInstance(HINSTANCE hInst) {
 	Gdiplus::GdiplusStartupInput gdiplusStartupInput;
 	status = Gdiplus::GdiplusStartup(&m_gdiplusToken, &gdiplusStartupInput, NULL);
 
-	//Settings settings;
-	// load locale...
-
 	m_localeManager.SetLocaleDir(GetAppDir());
-	m_localeManager.SetLocale(LocaleRuRU);
+	m_localeManager.LoadDefaultLocale();
 
 	return status == Gdiplus::Ok;
 }
 
 int Application::Run(int cmdShow) {
-
 	// Create main window
 	try {
 		m_pMainWindow = new MainWindow(m_hInst);

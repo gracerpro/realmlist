@@ -7,20 +7,20 @@ confirm_delete = Confirm delete
 file_name_not_contain_wow_exe = File name not contains "WoW.exe"
 localization = Localization
 localization_not_select = Select localization
-realmlist = Realmlist
-realmlist_descr_col = Description (server)
-realmlist_add_fail = Fail. Duplicate realmlist
-realmlist_change_fail = Fail. Duplicate realmlist
-realmlist_not_write = Write realmlist
-realmlist_not_select = Select realmlist
+server_addr = Server
+server_descr_col = Description of server
+server_add_fail = Fail. Duplicate URL
+server_change_fail = Fail. Duplicate URL
+server_not_write = Write server's address
+server_not_select = Select server
 run_wow_fail = Run WoW fail\n
-main_window_title = Realmlist manager
+main_window_title = Switch between WoW server
 tt_client_dir_del = Remove WoW client directory from list
 tt_client_dir_find = Find WoW cliend and add path to list
-tt_realmlist_add = Add realmlist to list
-tt_realmlist_change = Change realmlist name
-tt_realmlist_del = Delete realmlist from list
-tt_realmlist_write = Write realmlist to file realmlist.wpf
+tt_server_add = Add Server to list
+tt_server_change = Change Property of server
+tt_server_del = Delete server from list
+tt_server_addr_write = Write address of server to file realmlist.wpf
 tt_run_wow = Run WoW
 
 
@@ -28,12 +28,17 @@ tt_run_wow = Run WoW
 m_main_window_run_wow = Run WoW
 m_main_window_exit = Exit
 
-m_realmlist_write = Write
+m_server_write = Write
+m_main_window_from_client = From client
 
 m_client_dir = Directory WoW
 m_client_dir_find = Find...
 
 m_about = About...
+
+
+; About window
+wnd_about_title = About
 
 
 ; Common
@@ -43,3 +48,17 @@ common_del = Delete
 common_del_all = Delete all
 common_file = File
 common_help = Help
+common_language = language
+
+; Locale
+common_language_dede = German (Germany)
+common_language_frfr = French (France)
+common_language_engb = English (Great Brittan)
+common_language_enus = English (America)
+common_language_eses = Spanish (Spain)
+common_language_esmx = Spanish (Mexico)
+common_language_kokr = Korean (Korea)
+common_language_ptbr = Portuguese (Brazil)
+common_language_ruru = Russian (Russia)
+common_language_zhcn = Chinese (China)
+common_language_zhtw = Chinese (Taiwan) (traditional)

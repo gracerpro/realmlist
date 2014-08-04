@@ -1,5 +1,5 @@
 /*
-* Realmlist -- manage your realmlists of World of Warcraft
+* WowServerManager -- manage your servers of World of Warcraft
 * Copyright (C) 2014 SlaFF
 
 * This program is free software: you can redistribute it and/or modify
@@ -36,7 +36,7 @@ inline void ImageFactory::SafeRelease(T *&p)
 
 HBITMAP ImageFactory::LoadImageFromResource(HWND hwndParent, const WindowImageItem& imageItem)
 {
-	HBITMAP hBitmap;
+	HBITMAP hBitmap = NULL;
 
 	if (imageItem.format == ImageFormatBmp) {
 		hBitmap = LoadBitmap(GetModuleHandle(NULL), MAKEINTRESOURCE(imageItem.resourceId));

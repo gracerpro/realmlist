@@ -1,5 +1,5 @@
 /*
-* Realmlist -- manage your realmlists of World of Warcraft
+* WowServerManager -- manage your servers of World of Warcraft
 * Copyright (C) 2014 SlaFF
 
 * This program is free software: you can redistribute it and/or modify
@@ -22,11 +22,20 @@
 #include <string>
 #include <map>
 
-
 enum ApplicationLocale {
 	LocaleNull,
-	LocaleEnUS,
-	LocaleRuRU,
+	LocaleEnUS, // English (America)
+	LocaleRuRU, // Russian (Russia)
+	LocaleDeDE, // German (Germany)
+	LocaleFrFR, // French (France)
+	LocaleEnGB, // English (Great Brittan)
+	LocaleEsES, // Spanish (Spain)
+	LocaleEsMX, // Spanish (Mexico)
+	LocaleKoKR, // Korean (Korea)
+	LocalePtBR, // Portuguese (Brazil)
+	LocaleZhCN, // Chinese (China)
+	LocaleZhTW, // Chinese (Taiwan) (traditional)
+	LocaleMax
 };
 
 /*
@@ -42,20 +51,26 @@ public:
 	void SetLocaleDir(const TCHAR* dir);
 	/*
 	Find localization file by name: "locale_" + szLocele + ".txt"
-	and load the map ("English message" = "Localization message")
+	and load the map ("English message" = "Localized message")
 
 	@param szLocele (enUS, ruRU etc.)
 	@return true if localization was load success
 	*/
-	bool SetLocale(ApplicationLocale locale = LocaleEnUS);
-	/**
+	bool LoadLocale(ApplicationLocale locale);
+	bool LoadDefaultLocale();
+
+	AppString GetLocaleFilePath(ApplicationLocale locale);
+
+	/*
 	@param message Always in English!
 	@return localized text or "" if it not found
 	*/
-	const wchar_t* GetText(const char* message, ...);
+	const wchar_t* GetText(const char* message) const;
+
+	static const TCHAR* GetLocaleName(ApplicationLocale locale);
 
 
-	static const TCHAR* DEFAULT_LOCALE;
+	const static ApplicationLocale DEFAULT_LOCALE;
 
 protected:
 
@@ -64,4 +79,5 @@ private:
 	ApplicationLocale m_locale;
 	AppString m_localeDir;
 	std::map<std::string, std::wstring> m_messages;
+	std::map<std::string, std::wstring> m_messagesDefault;
 };

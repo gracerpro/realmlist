@@ -1,5 +1,5 @@
 /*
- * Realmlist -- manage your realmlists of World of Warcraft
+ * WowServerManager -- manage your servers of World of Warcraft
  * Copyright (C) 2014 SlaFF
 
  * This program is free software: you can redistribute it and/or modify
@@ -28,7 +28,6 @@ public:
 	void Activate();
 
 	bool AddTooltip(int idCtrl, HWND hwndParent, const TCHAR* text);
-	bool AddTooltip(HWND hwndCtrl, TCHAR* text);
 
 private:
 	HWND m_hWnd; // tooltip handle

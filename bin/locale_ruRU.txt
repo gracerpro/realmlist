@@ -7,20 +7,20 @@ confirm_delete = Подтвердите удаление
 file_name_not_contain_wow_exe = Имя файла не содержит "WoW.exe"
 localization = Локализация
 localization_not_select = Выберите локализацию клиента
-realmlist = Реалмлист
-realmlist_descr_col = Описание (сервер)
-realmlist_add_fail = Не удалось добавить реалмлист в список. Возможно, он уже присутствует в нем.
-realmlist_change_fail = Не удалось изменить реалмлист. Возможно, он уже присутствует в списке
-realmlist_not_write = Введите реалмлист
-realmlist_not_select = Не выбран реалмлист
+server_addr = Сервер
+server_descr_col = Описание сервера
+server_add_fail = Не удалось добавить сервер в список. Возможно, он уже присутствует в нем.
+server_change_fail = Не удалось изменить сервер. Возможно, он уже присутствует в списке
+server_not_write = Введите адрес сервера
+server_not_select = Не выбран сервер
 run_wow_fail = Не удалось запустить WoW\n
-main_window_title = Управление реалмлистами
+main_window_title = Переключение между серверами WoW
 tt_client_dir_del = Удалить путь до клиента WoW из списка
 tt_client_dir_find = Найти клиент Wow и добавить путь к нему в список
-tt_realmlist_add = Добавить реалмлист в список
-tt_realmlist_change = Изменить название реалмлиста
-tt_realmlist_del = Удалить реалмлист из списка
-tt_realmlist_write = Записать реалмлист в файл realmlist.wpf
+tt_server_add = Добавить сервер в список
+tt_server_change = Изменить свойства сервера
+tt_server_del = Удалить сервер из списка
+tt_server_addr_write = Записать адрес сервера в файл realmlist.wpf
 tt_run_wow = Запустить WoW
 
 
@@ -28,12 +28,17 @@ tt_run_wow = Запустить WoW
 m_main_window_run_wow = Запустить WoW
 m_main_window_exit = Выход
 
-m_realmlist_write = Записать
+m_server_write = Записать
+m_main_window_from_client = Из клиента
 
 m_client_dir = Директрия WoW
 m_client_dir_find = Найти...
 
 m_about = О программе...
+
+
+; About window
+wnd_about_title = О программе
 
 
 ; Common
@@ -43,3 +48,17 @@ common_del = Удалить
 common_del_all = Удалить все
 common_file = Файл
 common_help = Помощь
+common_language = Язык
+
+; Locale
+common_language_dede = German (Germany)
+common_language_frfr = French (France)
+common_language_engb = English (Great Brittan)
+common_language_enus = Английский
+common_language_eses = Spanish (Spain)
+common_language_esmx = Spanish (Mexico)
+common_language_kokr = Korean (Korea)
+common_language_ptbr = Portuguese (Brazil)
+common_language_ruru = Русский
+common_language_zhcn = Chinese (China)
+common_language_zhtw = Chinese (Taiwan) (traditional)

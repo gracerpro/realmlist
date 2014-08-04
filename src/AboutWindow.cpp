@@ -1,5 +1,5 @@
 /*
- * Realmlist -- manage your realmlists of World of Warcraft
+ * WowServerManager -- manage your servers of World of Warcraft
  * Copyright (C) 2014 SlaFF
 
  * This program is free software: you can redistribute it and/or modify
@@ -17,6 +17,9 @@
  */
 #include "AboutWindow.h"
 #include "resource.h"
+#include "Application.h"
+
+extern Application g_App;
 
 AboutWindow::AboutWindow(HWND hwndParent) {
 	m_hwndParent = hwndParent;
@@ -29,6 +32,7 @@ AboutWindow::~AboutWindow() {
 static BOOL WINAPI AboutWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 	switch (uMsg) {
 	case WM_INITDIALOG:
+		SetWindowText(hWnd, g_App.L("wnd_about_title"));
 		return TRUE;
 	case WM_COMMAND:
 		int id = LOWORD(wParam);

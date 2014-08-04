@@ -1,5 +1,5 @@
 /*
- * Realmlist -- manage your realmlists of World of Warcraft
+ * WowServerManager -- manage your servers of World of Warcraft
  * Copyright (C) 2014 SlaFF
 
  * This program is free software: you can redistribute it and/or modify
@@ -55,24 +55,16 @@ bool Tooltip::AddTooltip(int idCtrl, HWND hwndParent, const TCHAR* text) {
 #endif
 	tt.uId = (UINT_PTR)hwndCtrl;
 	tt.hwnd = hwndParent;
+	tt.uFlags = TTF_SUBCLASS | TTF_IDISHWND;
 
-	if (SendMessage(m_hWnd, TTM_GETTOOLINFO, 0, (LPARAM)(LPTOOLINFO)&tt)) {
+	if (SendMessage(m_hWnd, TTM_GETTOOLINFO, 0, (LPARAM)&tt)) {
 		tt.lpszText = (LPWSTR)text;
-		SendMessage(m_hWnd, TTM_UPDATETIPTEXT, 0, (LPARAM)(LPTOOLINFO)&tt);
+		SendMessage(m_hWnd, TTM_UPDATETIPTEXT, 0, (LPARAM)&tt);
 		return true;
 	}
-
-	tt.uFlags = TTF_SUBCLASS | TTF_IDISHWND;
 	tt.lpszText = (LPWSTR)text;
-	tt.hinst = GetModuleHandle(NULL);
-	GetClientRect(hwndCtrl, &tt.rect);
 
 	SendMessage(m_hWnd, TTM_ADDTOOL, 0, LPARAM(&tt));
-
-	return true;
-}
-
-bool Tooltip::AddTooltip(HWND hwndCtrl, TCHAR* text) {
 
 	return true;
 }
