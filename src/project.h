@@ -23,9 +23,20 @@
 #include <vector>
 #include <tchar.h>
 
+enum ServerStatus {
+	ServerStatusNull,
+	ServerStatusOnline,
+	ServerStatusOffline,
+};
+
 struct stServer {
 	AppString address;
 	AppString description;
+	ServerStatus status;
+
+	stServer() {
+		status = ServerStatusOffline;
+	}
 
 	bool operator == (const stServer server) const {
 		return address == server.address;
@@ -71,18 +82,21 @@ public:
 	bool DelClientDir(size_t index);
 	void SetSelectedClientDir(size_t index);
 
-	const ServerList& LoadServers();
+	ServerList& LoadServers();
 	void SaveServer();
 	bool AddServer(const stServer& server);
 	bool DelServer(const AppString& server);
 	void DelAllServers();
 	bool ChangeServer(const AppString serverAddr, stServer& serverNew);
 	bool SetCurrectServer(size_t indexClientDir, AppString locale, const AppString server);
+	const stServer* Servers(size_t index) const;
 
 	size_t LoadLocaleServerAddr(LocaleServerList& list, size_t clientDirIndex);
 
-	// @return "open" or "close"
-	static AppString GetServerStatusName(const AppString& serverAddr);
+	// sets server.status
+	// @return "online" or "offline"
+	static AppString GetServerStatus(stServer* pServer);
+	static AppString GetServerStatusName(ServerStatus status);
 
 	eWowVersion GetWowVersion() const;
 

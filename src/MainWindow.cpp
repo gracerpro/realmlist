@@ -70,8 +70,7 @@ BOOL MainDlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 		g_MainWindow->OnCommand(id, notifyCode, hwndFrom);
 		return TRUE;
 	case WM_NOTIFY:
-		g_MainWindow->OnNotify((int)wParam, (LPNMHDR)lParam);
-		break;
+		return g_MainWindow->OnNotify((int)wParam, (LPNMHDR)lParam);
 	case WM_GETMINMAXINFO:
 		g_MainWindow->OnMinMaxInfo((LPMINMAXINFO)lParam);
 		break;
@@ -147,13 +146,56 @@ void MainWindow::OnCommand(int id, int notifyCode, HWND hwndFrom) {
 	}
 }
 
-void MainWindow::OnNotify(int idCtrl, LPNMHDR lpNmhdr) {
-	if (idCtrl == IDC_LSV_SERVER && lpNmhdr->code == LVN_ITEMCHANGED) {
-		NM_LISTVIEW* pNmListView = (NM_LISTVIEW*)lpNmhdr;
-		if (pNmListView->uNewState == 3) { // TODO: hack
-			OnServerLviChangeSel();
+static LRESULT OnCustumDraw(NMHDR* nmHdr) {
+	if (nmHdr->idFrom != IDC_LSV_SERVER) {
+		return CDRF_DODEFAULT;
+	}
+
+	NMLVCUSTOMDRAW* nmlvcd = (NMLVCUSTOMDRAW*)nmHdr;
+
+	switch (nmlvcd->nmcd.dwDrawStage) {
+	case CDDS_PREPAINT:
+		return CDRF_NOTIFYITEMDRAW;
+	case CDDS_ITEMPREPAINT:
+		HWND hLviServer = nmHdr->hwndFrom;
+		LV_ITEM item;
+		item.iItem = nmlvcd->nmcd.dwItemSpec;
+		item.mask = LVIF_PARAM;
+		ListView_GetItem(hLviServer, &item);
+
+		COLORREF backColor;
+		backColor = RGB(255, 255, 255);
+		const stServer* pServer = g_MainWindow->GetProject().Servers(nmlvcd->nmcd.dwItemSpec);
+		if (pServer) {
+			if (pServer->status == ServerStatusOffline) {
+				backColor = RGB(100, 255, 100);
+			}
+		}
+		nmlvcd->clrTextBk = backColor;
+        return CDRF_NOTIFYSUBITEMDRAW;
+	/*case (CDDS_ITEMPREPAINT | CDDS_ITEM | CDDS_SUBITEM):
+		COLORREF clr = (nmlvcd->nmcd.dwItemSpec & 1) ? RGB(255,255,255) : RGB(230,230,230);
+		return CDRF_NEWFONT;*/
+	}
+
+	return CDRF_DODEFAULT;
+}
+
+LPARAM MainWindow::OnNotify(int idCtrl, LPNMHDR lpNmhdr) {
+	if (idCtrl == IDC_LSV_SERVER) {
+		if (lpNmhdr->code == LVN_ITEMCHANGED) {
+			NM_LISTVIEW* pNmListView = (NM_LISTVIEW*)lpNmhdr;
+			if (pNmListView->uNewState == 3) { // TODO: hack
+				OnServerLviChangeSel();
+			}
+		}
+		if (lpNmhdr->code == NM_CUSTOMDRAW) {
+			SetWindowLong(m_hWnd, DWL_MSGRESULT, OnCustumDraw(lpNmhdr));
+			return TRUE;
 		}
 	}
+
+	return 0;
 }
 
 void MainWindow::OnClose() {
@@ -243,30 +285,11 @@ void MainWindow::InitListviews() {
 }
 
 void MainWindow::FillServerListView() {
-	LV_ITEM item = { 0 };
-
 	HWND hwndLvi = GetDlgItem(m_hWnd, IDC_LSV_SERVER);
-	ServerList ServerList = m_project.LoadServers();
+	ServerList& ServerList = m_project.LoadServers();
 	for (size_t i = 0; i < ServerList.size(); ++i) {
-		const stServer& server = ServerList[i];
-
-		item.pszText = const_cast<TCHAR*>(server.address.c_str());
-		item.mask = LVIF_TEXT;
-		item.iItem = static_cast<int>(i);
-		LRESULT index = ListView_InsertItem(hwndLvi, &item);
-		TCHAR* pDescr = const_cast<TCHAR*>(server.description.c_str());
-		ListView_SetItemText(hwndLvi, index, 1, pDescr);
-	}
-}
-
-void MainWindow::RetrieveServersStatus() {
-	ServerList ServerList = m_project.GetServerList();
-	HWND hLviServer = GetDlgItem(m_hWnd, IDC_LSV_SERVER);
-
-	for (size_t i = 0; i < ServerList.size(); ++i) {
-		const stServer& server = ServerList[i];
-		AppString statusName = WowClient::GetServerStatusName(server.address);
-		ListView_SetItemText(hLviServer, i, 2, const_cast<LPWSTR>(statusName.c_str()));
+		stServer& server = ServerList[i];
+		AddServerToListView(&server);
 	}
 }
 
@@ -281,7 +304,6 @@ void MainWindow::OnInitDialog(LPARAM param) {
 	SetLocale(locale, false);
 
 	FillServerListView();
-	RetrieveServersStatus();
 
 	m_project.LoadClientDirList();
 	ClientDirList list = m_project.GetClientPathList();
@@ -371,19 +393,19 @@ void MainWindow::LoadLocaleText() {
 	LV_COLUMN col = { 0 };
 	col.mask = LVCF_TEXT;
 
-	HWND hwndLvi = GetDlgItem(m_hWnd, IDC_LSV_SERVER);
-	col.pszText = const_cast<LPWSTR>(g_App.L("server_addr"));
-	ListView_SetColumn(hwndLvi, 0, &col);
-	col.pszText = const_cast<LPWSTR>(g_App.L("server_descr_col"));
-	ListView_SetColumn(hwndLvi, 1, &col);
-	col.pszText = TEXT("status");
-	ListView_SetColumn(hwndLvi, 2, &col);
-
 	HWND hwndLviClient = GetDlgItem(m_hWnd, IDC_LSV_CLIENT);
 	col.pszText = (PWCHAR)g_App.L("localization");
 	ListView_SetColumn(hwndLviClient, 0, &col);
 	col.pszText = (PWCHAR)g_App.L("server_addr");
 	ListView_SetColumn(hwndLviClient, 1, &col);
+
+	HWND hwndLvi = GetDlgItem(m_hWnd, IDC_LSV_SERVER);
+	col.pszText = const_cast<LPWSTR>(g_App.L("server_addr"));
+	ListView_SetColumn(hwndLvi, 0, &col);
+	col.pszText = const_cast<LPWSTR>(g_App.L("server_descr_col"));
+	ListView_SetColumn(hwndLvi, 1, &col);
+	col.pszText = const_cast<LPWSTR>(g_App.L("server_status"));
+	ListView_SetColumn(hwndLvi, 2, &col);
 
 	// set main title
 	SetWindowText(m_hWnd, g_App.L("main_window_title"));
@@ -481,19 +503,7 @@ void MainWindow::OnAddServer() {
 		MessageBox(g_App.L("server_add_fail"));
 		return;
 	}
-	// TODO: function
-	HWND hwndLvi = GetDlgItem(m_hWnd, IDC_LSV_SERVER);
-	LV_ITEM item = {0};
-
-	item.pszText = const_cast<TCHAR*>(server.address.c_str());
-	item.mask = LVIF_TEXT;
-	item.iItem = ListView_GetItemCount(hwndLvi);
-	LRESULT index = ListView_InsertItem(hwndLvi, &item);
-	TCHAR* pDescr = const_cast<TCHAR*>(server.description.c_str());
-	ListView_SetItemText(hwndLvi, index, 1, pDescr);
-	AppString statusName = WowClient::GetServerStatusName(server.address);
-	TCHAR* pStatusName = const_cast<TCHAR*>(statusName.c_str());
-	ListView_SetItemText(hwndLvi, index, 2, pStatusName);
+	AddServerToListView(&server);
 }
 
 void MainWindow::OnDelServer() {
@@ -731,4 +741,27 @@ void MainWindow::SetLocale(ApplicationLocale locale, bool bUserSelect) {
 	CheckMenuRadioItem(hMenu, IDC_LOCALE_START, IDC_LOCALE_END, id, 0);
 
 	DrawMenuBar(m_hWnd);
+}
+
+/*
+@param server Pointer to stServer struct from server list!
+*/
+void MainWindow::AddServerToListView(stServer* server) {
+	HWND hwndLvi = GetDlgItem(m_hWnd, IDC_LSV_SERVER);
+	LV_ITEM item = {0};
+
+	// For DEBUG:
+	// ServerStatus status = rand() % 2 == 0 ? ServerStatusOffline : ServerStatusOnline;
+	// AppString statusName = WowClient::GetServerStatusName(status);
+	// server->status = status;
+	item.pszText = const_cast<TCHAR*>(server->address.c_str());
+	item.mask = LVIF_TEXT | LVIF_PARAM;
+	item.iItem = ListView_GetItemCount(hwndLvi);
+	item.lParam = (LPARAM)&server;
+	LRESULT index = ListView_InsertItem(hwndLvi, &item);
+	TCHAR* pDescr = const_cast<TCHAR*>(server->description.c_str());
+	ListView_SetItemText(hwndLvi, index, 1, pDescr);
+	AppString statusName = WowClient::GetServerStatus(server);
+	TCHAR* pStatusName = const_cast<TCHAR*>(statusName.c_str());
+	ListView_SetItemText(hwndLvi, index, 2, pStatusName);
 }

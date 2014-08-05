@@ -18,6 +18,7 @@
 #include "Application.h"
 #include <CommCtrl.h>
 #include <winsock.h>
+#include <time.h>
 
 Application::Application() {
 	m_hInst = NULL;
@@ -53,6 +54,8 @@ bool Application::InitInstance(HINSTANCE hInst) {
 
 	m_localeManager.SetLocaleDir(GetAppDir());
 	m_localeManager.LoadDefaultLocale();
+
+	srand(static_cast<unsigned int>(time(NULL)));
 
 	return result;
 }

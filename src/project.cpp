@@ -122,7 +122,7 @@ void WowClient::SaveClientDirList() {
 	ostream.close();
 }
 
-const ServerList& WowClient::LoadServers() {
+ServerList& WowClient::LoadServers() {
 	std::basic_ifstream<TCHAR> stream(GetRealmlistFilePath());
 
 	m_serverList.clear();
@@ -383,18 +383,30 @@ size_t WowClient::LoadLocaleServerAddr(LocaleServerList& list, size_t clientDirI
 	return list.size();
 }
 
-AppString WowClient::GetServerStatusName(const AppString& serverAddr) {
-	AppString statusName = TEXT("close");
+AppString WowClient::GetServerStatusName(ServerStatus status) {
+	AppString statusName = TEXT("offline");
+
+	if (status == ServerStatusOnline) {
+		statusName = TEXT("online");
+	}
+
+	return statusName;
+}
+
+AppString WowClient::GetServerStatus(stServer* pServer) {
+	ServerStatus status = ServerStatusOffline;
+
+	pServer->status = ServerStatusOffline;
 
 	SOCKET s = socket(AF_INET, SOCK_STREAM, 0);
 	if (s == SOCKET_ERROR) {
-		return statusName;
+		return GetServerStatusName(status);
 	}
 
 	const char* host;
 #ifdef UNICODE
 	char szAddress[255];
-	const wchar_t* wszAddress = serverAddr.c_str();
+	const wchar_t* wszAddress = pServer->address.c_str();
 	mbstate_t state;
 	size_t convertRetVal;
 	wcsrtombs_s(&convertRetVal, szAddress, &wszAddress, sizeof(szAddress), &state);
@@ -418,11 +430,25 @@ AppString WowClient::GetServerStatusName(const AppString& serverAddr) {
 		addr.sin_addr.S_un.S_addr = address;
 
 		if (connect(s, (const sockaddr*)&addr, sizeof(addr)) != SOCKET_ERROR) {
-			statusName = TEXT("open");
+			status = ServerStatusOnline;
 		}
 	}
 
 	closesocket(s);
 
-	return statusName;
+	pServer->status = status;
+
+	return GetServerStatusName(status);
+}
+
+const stServer* WowClient::Servers(size_t index) const {
+	if (index < 0 || index >= m_serverList.size()) {
+		return NULL;
+	}
+
+	ServerList::const_iterator iterServer = m_serverList.begin();
+	std::advance(iterServer, index);
+	const stServer& server = *iterServer;
+
+	return &server;
 }
