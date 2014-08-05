@@ -22,7 +22,7 @@
 #include "settings.h"
 #include "AboutWindow.h"
 #include <CommCtrl.h>
-#include <tchar.h>
+#include <string.h>
 
 extern Application g_App;
 
@@ -31,13 +31,12 @@ static MainWindow* g_MainWindow;
 BOOL MainDlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 
-static inline INT_PTR GetSelectedIndexLvi(HWND hwndLvi) {
-	return SendMessage(hwndLvi, LVM_GETNEXTITEM, -1, LVNI_SELECTED);
+static inline int GetSelectedIndexLvi(HWND hwndLvi) {
+	return (int)SendMessage(hwndLvi, LVM_GETNEXTITEM, -1, LVNI_SELECTED);
 }
 
-void SetSelectedIndexLvi(HWND hwndParent, int index) {
-	HWND hwndLvi = GetDlgItem(hwndParent, IDC_LSV_SERVER);
-	ListView_SetItemState(hwndParent, index, LVIS_FOCUSED | LVIS_SELECTED, 0);
+static void SetSelectedIndexLvi(HWND hwndLvi, int index) {
+	ListView_SetItemState(hwndLvi, index, LVIS_FOCUSED | LVIS_SELECTED, 0);
 }
 
 MainWindow::MainWindow(HINSTANCE hInst) {
@@ -146,7 +145,7 @@ void MainWindow::OnCommand(int id, int notifyCode, HWND hwndFrom) {
 	}
 }
 
-static LRESULT OnCustumDraw(NMHDR* nmHdr) {
+static LONG OnCustumDraw(NMHDR* nmHdr) {
 	if (nmHdr->idFrom != IDC_LSV_SERVER) {
 		return CDRF_DODEFAULT;
 	}
@@ -157,12 +156,6 @@ static LRESULT OnCustumDraw(NMHDR* nmHdr) {
 	case CDDS_PREPAINT:
 		return CDRF_NOTIFYITEMDRAW;
 	case CDDS_ITEMPREPAINT:
-		HWND hLviServer = nmHdr->hwndFrom;
-		LV_ITEM item;
-		item.iItem = nmlvcd->nmcd.dwItemSpec;
-		item.mask = LVIF_PARAM;
-		ListView_GetItem(hLviServer, &item);
-
 		COLORREF backColor;
 		backColor = RGB(255, 255, 255);
 		const stServer* pServer = g_MainWindow->GetProject().Servers(nmlvcd->nmcd.dwItemSpec);
@@ -181,7 +174,7 @@ static LRESULT OnCustumDraw(NMHDR* nmHdr) {
 	return CDRF_DODEFAULT;
 }
 
-LPARAM MainWindow::OnNotify(int idCtrl, LPNMHDR lpNmhdr) {
+BOOL MainWindow::OnNotify(int idCtrl, LPNMHDR lpNmhdr) {
 	if (idCtrl == IDC_LSV_SERVER) {
 		if (lpNmhdr->code == LVN_ITEMCHANGED) {
 			NM_LISTVIEW* pNmListView = (NM_LISTVIEW*)lpNmhdr;
@@ -190,7 +183,12 @@ LPARAM MainWindow::OnNotify(int idCtrl, LPNMHDR lpNmhdr) {
 			}
 		}
 		if (lpNmhdr->code == NM_CUSTOMDRAW) {
-			SetWindowLong(m_hWnd, DWL_MSGRESULT, OnCustumDraw(lpNmhdr));
+#ifdef _WIN64
+			int index = DWLP_MSGRESULT;
+#else
+			int index = DWL_MSGRESULT;
+#endif
+			SetWindowLong(m_hWnd, index, OnCustumDraw(lpNmhdr));
 			return TRUE;
 		}
 	}
@@ -269,27 +267,26 @@ void MainWindow::InitListviews() {
 
 	col.mask = LVCF_WIDTH | LVCF_TEXT;
 	col.cx = 200;
-	col.pszText = TEXT("");
-	ListView_InsertColumn(hwndLvi, 0, &col);
-	ListView_InsertColumn(hwndLvi, 1, &col);
+	col.pszText = NULL;
+	SendMessage(hwndLvi, LVM_INSERTCOLUMN, 0, (LPARAM)&col);
+	SendMessage(hwndLvi, LVM_INSERTCOLUMN, 1, (LPARAM)&col);
 	col.cx = 60;
-	ListView_InsertColumn(hwndLvi, 2, &col);
-	ListView_SetExtendedListViewStyle(hwndLvi, LVS_EX_FULLROWSELECT | LVS_EX_SINGLEROW);
+	SendMessage(hwndLvi, LVM_INSERTCOLUMN, 2, (LPARAM)&col);
+	SendMessage(hwndLvi, LVM_SETEXTENDEDLISTVIEWSTYLE, 0, LVS_EX_FULLROWSELECT | LVS_EX_SINGLEROW);
 
 	HWND hwndLviClient = GetDlgItem(m_hWnd, IDC_LSV_CLIENT);
 	col.cx = 100;
-	ListView_InsertColumn(hwndLviClient, 0, &col);
+	SendMessage(hwndLviClient, LVM_INSERTCOLUMN, 0, (LPARAM)&col);
 	col.cx = 200;
-	ListView_InsertColumn(hwndLviClient, 1, &col);
-	ListView_SetExtendedListViewStyle(hwndLviClient, LVS_EX_FULLROWSELECT | LVS_EX_SINGLEROW);
+	SendMessage(hwndLviClient, LVM_INSERTCOLUMN, 1, (LPARAM)&col);
+	SendMessage(hwndLviClient, LVM_SETEXTENDEDLISTVIEWSTYLE, 0, LVS_EX_FULLROWSELECT | LVS_EX_SINGLEROW);
 }
 
 void MainWindow::FillServerListView() {
-	HWND hwndLvi = GetDlgItem(m_hWnd, IDC_LSV_SERVER);
 	ServerList& ServerList = m_project.LoadServers();
 	for (size_t i = 0; i < ServerList.size(); ++i) {
 		stServer& server = ServerList[i];
-		AddServerToListView(&server);
+		AddServerToListView(server);
 	}
 }
 
@@ -319,7 +316,8 @@ void MainWindow::OnInitDialog(LPARAM param) {
 	}
 
 	int indexServer = settings.GetInt(TEXT("selected_server"));
-	SetSelectedIndexLvi(m_hWnd, indexServer);
+	HWND hwndLvi = GetDlgItem(m_hWnd, IDC_LSV_SERVER);
+	SetSelectedIndexLvi(hwndLvi, indexServer);
 
 	int index = settings.GetInt(TEXT("selected_client_dir"));
 	SendDlgItemMessage(m_hWnd, IDC_CB_CLIENT_DIR, CB_SETCURSEL, index, 0);
@@ -335,7 +333,7 @@ void MainWindow::OnInitDialog(LPARAM param) {
 void MainWindow::RemoveUnknownLocaleMenuItems() {
 	HMENU hMenu = GetMenu(m_hWnd);
 
-	for (size_t i = LocaleNull + 1; i < LocaleMax; ++i) {
+	for (UINT i = LocaleNull + 1; i < LocaleMax; ++i) {
 		ApplicationLocale locale = static_cast<ApplicationLocale>(i);
 		AppString filePath = g_App.GetLocaleManager().GetLocaleFilePath(locale);
 		if (!IsFile(filePath.c_str())) {
@@ -395,17 +393,17 @@ void MainWindow::LoadLocaleText() {
 
 	HWND hwndLviClient = GetDlgItem(m_hWnd, IDC_LSV_CLIENT);
 	col.pszText = (PWCHAR)g_App.L("localization");
-	ListView_SetColumn(hwndLviClient, 0, &col);
+	SendMessage(hwndLviClient, LVM_SETCOLUMN, 0, (LPARAM)&col);
 	col.pszText = (PWCHAR)g_App.L("server_addr");
-	ListView_SetColumn(hwndLviClient, 1, &col);
+	SendMessage(hwndLviClient, LVM_SETCOLUMN, 1, (LPARAM)&col);
 
 	HWND hwndLvi = GetDlgItem(m_hWnd, IDC_LSV_SERVER);
 	col.pszText = const_cast<LPWSTR>(g_App.L("server_addr"));
-	ListView_SetColumn(hwndLvi, 0, &col);
+	SendMessage(hwndLvi, LVM_SETCOLUMN, 0, (LPARAM)&col);
 	col.pszText = const_cast<LPWSTR>(g_App.L("server_descr_col"));
-	ListView_SetColumn(hwndLvi, 1, &col);
+	SendMessage(hwndLviClient, LVM_SETCOLUMN, 1, (LPARAM)&col);
 	col.pszText = const_cast<LPWSTR>(g_App.L("server_status"));
-	ListView_SetColumn(hwndLvi, 2, &col);
+	SendMessage(hwndLviClient, LVM_SETCOLUMN, 2, (LPARAM)&col);
 
 	// set main title
 	SetWindowText(m_hWnd, g_App.L("main_window_title"));
@@ -455,7 +453,7 @@ void MainWindow::OnDelClientDir() {
 		TCHAR deletedDir[MAX_PATH];
 		GetDlgItemText(m_hWnd, IDC_CB_CLIENT_DIR, currentDir, MAX_PATH);
 		SendDlgItemMessage(m_hWnd, IDC_CB_CLIENT_DIR, CB_GETLBTEXT, index, (LPARAM)deletedDir);
-		if (!_tcscmp(currentDir, deletedDir)) {
+		if (0 == _tcscmp(currentDir, deletedDir)) {
 			SetDlgItemText(m_hWnd, IDC_CB_CLIENT_DIR, TEXT(""));
 		}
 		SendDlgItemMessage(m_hWnd, IDC_CB_CLIENT_DIR, CB_DELETESTRING, index, 0);
@@ -503,7 +501,7 @@ void MainWindow::OnAddServer() {
 		MessageBox(g_App.L("server_add_fail"));
 		return;
 	}
-	AddServerToListView(&server);
+	AddServerToListView(server);
 }
 
 void MainWindow::OnDelServer() {
@@ -519,7 +517,7 @@ void MainWindow::OnDelServer() {
 	}
 	if (m_project.DelServer(serverAddr)) {
 		HWND hwndLvi = GetDlgItem(m_hWnd, IDC_LSV_SERVER);
-		ListView_DeleteItem(hwndLvi, index);
+		SendMessage(hwndLvi, LVM_DELETEITEM, index, 0);
 	}
 }
 
@@ -544,10 +542,6 @@ void MainWindow::OnChangeServer() {
 	GetDlgItemText(m_hWnd, IDC_EDT_SERVER_DESCR, buf, 1024);
 	server.description = buf;
 
-	// TODO: function
-	HWND hwndLvi = GetDlgItem(m_hWnd, IDC_LSV_SERVER);
-	LV_ITEM item = {0};
-
 	int index = GetSelectedServer(serverAddr, 255);
 	if (index == -1) {
 		MessageBox(g_App.L("server_not_select"));
@@ -558,6 +552,7 @@ void MainWindow::OnChangeServer() {
 		return;
 	}
 
+	HWND hwndLvi = GetDlgItem(m_hWnd, IDC_LSV_SERVER);
 	TCHAR* pName = const_cast<TCHAR*>(server.address.c_str());
 	ListView_SetItemText(hwndLvi, index, 0, pName);
 	TCHAR* pDescr = const_cast<TCHAR*>(server.description.c_str());
@@ -566,13 +561,13 @@ void MainWindow::OnChangeServer() {
 
 void MainWindow::OnSetCurrentServer() {
 	HWND hwndLviServer = GetDlgItem(m_hWnd, IDC_LSV_SERVER);
-	LRESULT serverIndex = GetSelectedIndexLvi(hwndLviServer);
+	int serverIndex = GetSelectedIndexLvi(hwndLviServer);
 	if (serverIndex == -1) {
 		MessageBox(g_App.L("server_not_select"));
 		return;
 	}
 	HWND hwndLviLocale = GetDlgItem(m_hWnd, IDC_LSV_CLIENT);
-	LRESULT localeIndex = GetSelectedIndexLvi(hwndLviLocale);
+	int localeIndex = GetSelectedIndexLvi(hwndLviLocale);
 	if (localeIndex == -1) {
 		MessageBox(g_App.L("localization_not_select"));
 		return;
@@ -593,7 +588,7 @@ void MainWindow::OnSetCurrentServer() {
 
 void MainWindow::OnServerFromClient() {
 	HWND hwndLviClient = GetDlgItem(m_hWnd, IDC_LSV_CLIENT);
-	LRESULT localeIndex = GetSelectedIndexLvi(hwndLviClient);
+	int localeIndex = GetSelectedIndexLvi(hwndLviClient);
 	if (localeIndex == -1) {
 		MessageBox(g_App.L("localization_not_select"));
 		return;
@@ -611,7 +606,7 @@ void MainWindow::OnComboboxClientDirChangeSel() {
 	m_project.SetSelectedClientDir(index);
 
 	HWND hwndLvi = GetDlgItem(m_hWnd, IDC_LSV_CLIENT);
-	ListView_DeleteAllItems(hwndLvi);
+	SendMessage(hwndLvi, LVM_DELETEALLITEMS, 0, 0);
 
 	LocaleServerList list;
 	m_project.LoadLocaleServerAddr(list, index);
@@ -630,10 +625,10 @@ void MainWindow::OnComboboxClientDirChangeSel() {
 	}
 }
 
-INT_PTR MainWindow::GetSelectedServer(TCHAR* serverUrl, int bufferSize) {
+int MainWindow::GetSelectedServer(TCHAR* serverUrl, int bufferSize) {
 	serverUrl[0] = 0;
 	HWND hwndLvi = GetDlgItem(m_hWnd, IDC_LSV_SERVER);
-	INT_PTR index = GetSelectedIndexLvi(hwndLvi);
+	int index = GetSelectedIndexLvi(hwndLvi);
 	if (index < 0) {
 		return -1;
 	}
@@ -647,7 +642,7 @@ void MainWindow::OnServerLviChangeSel() {
 	TCHAR description[200];
 	HWND hwndLvi = GetDlgItem(m_hWnd, IDC_LSV_SERVER);
 
-	INT_PTR index = GetSelectedIndexLvi(hwndLvi);
+	int index = GetSelectedIndexLvi(hwndLvi);
 	if (index < 0) {
 		return;
 	}
@@ -660,7 +655,7 @@ void MainWindow::OnServerLviChangeSel() {
 bool MainWindow::AddToClientDirCb(const TCHAR* szDir) {
 	TCHAR dir[MAX_PATH];
 
-	wcscpy_s(dir, szDir);
+	wcscpy(dir, szDir);
 	HWND hwndClientPathCb = GetDlgItem(m_hWnd, IDC_CB_CLIENT_DIR);
 	LRESULT index = SendMessage(hwndClientPathCb, CB_ADDSTRING, 0, (LPARAM)szDir);
 	SendMessage(hwndClientPathCb, CB_SETCURSEL, index, 0);
@@ -688,12 +683,12 @@ void MainWindow::OnFileRunWow() {
 	SendDlgItemMessage(m_hWnd, IDC_CB_CLIENT_DIR, CB_GETLBTEXT, index, (LPARAM)wowExePath);
 	ToDirectoryName(wowExePath);
 
-	_tcscat_s(wowExePath, TEXT("WoW.exe"));
+	_tcscat(wowExePath, TEXT("WoW.exe"));
 
-	if (!CreateProcess(wowExePath, TEXT(""), NULL, NULL, FALSE, CREATE_DEFAULT_ERROR_MODE, NULL, NULL, &sti, &pi)) {
+	if (!CreateProcess(wowExePath, NULL, NULL, NULL, FALSE, CREATE_DEFAULT_ERROR_MODE, NULL, NULL, &sti, &pi)) {
 		TCHAR message[MAX_PATH + 100];
-		_tcscpy_s(message, g_App.L("run_wow_fail"));
-		_tcscat_s(message, wowExePath);
+		_tcscpy(message, g_App.L("run_wow_fail"));
+		_tcscat(message, wowExePath);
 		MessageBox(message, MB_ICONWARNING);
 	}
 }
@@ -746,7 +741,7 @@ void MainWindow::SetLocale(ApplicationLocale locale, bool bUserSelect) {
 /*
 @param server Pointer to stServer struct from server list!
 */
-void MainWindow::AddServerToListView(stServer* server) {
+void MainWindow::AddServerToListView(const stServer& server) {
 	HWND hwndLvi = GetDlgItem(m_hWnd, IDC_LSV_SERVER);
 	LV_ITEM item = {0};
 
@@ -754,14 +749,15 @@ void MainWindow::AddServerToListView(stServer* server) {
 	// ServerStatus status = rand() % 2 == 0 ? ServerStatusOffline : ServerStatusOnline;
 	// AppString statusName = WowClient::GetServerStatusName(status);
 	// server->status = status;
-	item.pszText = const_cast<TCHAR*>(server->address.c_str());
+	item.pszText = const_cast<TCHAR*>(server.address.c_str());
 	item.mask = LVIF_TEXT | LVIF_PARAM;
 	item.iItem = ListView_GetItemCount(hwndLvi);
 	item.lParam = (LPARAM)&server;
 	LRESULT index = ListView_InsertItem(hwndLvi, &item);
-	TCHAR* pDescr = const_cast<TCHAR*>(server->description.c_str());
+	TCHAR* pDescr = const_cast<TCHAR*>(server.description.c_str());
 	ListView_SetItemText(hwndLvi, index, 1, pDescr);
-	AppString statusName = WowClient::GetServerStatus(server);
+	ServerStatus status = WowClient::GetServerStatus(server);
+	AppString statusName = WowClient::GetServerStatusName(status);
 	TCHAR* pStatusName = const_cast<TCHAR*>(statusName.c_str());
 	ListView_SetItemText(hwndLvi, index, 2, pStatusName);
 }

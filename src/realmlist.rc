@@ -1,7 +1,5 @@
-#define MANIFEST 24
-
-#include <windows.h>
 #include "resource.h"
+#include <windows.h>
 
 IDR_MAINFRAME DIALOGEX -4,-28,399,207
 CAPTION "Wow server manager"

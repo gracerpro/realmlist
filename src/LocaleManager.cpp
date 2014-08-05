@@ -59,7 +59,7 @@ bool LocaleManager::LoadLocale(ApplicationLocale locale) {
 	}
 
 	auto& messages = locale == LocaleEnUS ? m_messagesDefault : m_messages;
-	AppString fileName = GetLocaleFilePath(locale);
+	std::string fileName = ToString(GetLocaleFilePath(locale));
 
 	std::ifstream stream;
 	stream.open(fileName, std::ios::in);

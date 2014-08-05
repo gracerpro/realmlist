@@ -23,7 +23,7 @@
 Application::Application() {
 	m_hInst = NULL;
 	m_pMainWindow = NULL;
-	m_gdiplusToken = NULL;
+	m_gdiplusToken = 0;
 }
 
 Application::~Application() {

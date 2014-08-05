@@ -7,6 +7,7 @@ bin/*.*
 !bin/locale_*.txt
 bin64/
 build/VC100/*.user
+build/codeblocks/obj/
 release/
 
 *.opensdf

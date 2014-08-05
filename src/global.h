@@ -31,3 +31,4 @@ bool IsFile(const TCHAR* file);
 bool IsDir(const TCHAR* file);
 
 TCHAR* trim(TCHAR* str);
+std::string ToString(AppString str);

@@ -24,7 +24,7 @@ bool IsDirectory(const TCHAR* szDir) {
 
 TCHAR* ToDirectoryName(TCHAR* szDir) {
 	if (!szDir) {
-		return false;
+		return NULL;
 	}
 
 	TCHAR* p = &szDir[_tcslen(szDir)];
@@ -37,13 +37,13 @@ TCHAR* ToDirectoryName(TCHAR* szDir) {
 }
 
 bool IsFile(const TCHAR* file) {
-	return GetFileAttributes(file) != -1;
+	return GetFileAttributes(file) != 0xFFFFFFFF;
 }
 
 bool IsDir(const TCHAR* file) {
 	DWORD res = GetFileAttributes(file);
 
-	return (res != -1) && (res & FILE_ATTRIBUTE_DIRECTORY);
+	return (res != 0xFFFFFFFF) && (res & FILE_ATTRIBUTE_DIRECTORY);
 }
 
 TCHAR* trim(TCHAR* str) {
@@ -60,4 +60,10 @@ TCHAR* trim(TCHAR* str) {
 	*(pEnd + 1) = 0;
 
 	return res;
+}
+
+std::string ToString(AppString str) {
+	std::string convertStr(str.begin(), str.end());
+
+	return convertStr;
 }

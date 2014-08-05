@@ -41,7 +41,7 @@ protected:
 	void OnDropFiles(HDROP hDrop);
 	void OnInitDialog(LPARAM param);
 	void OnMinMaxInfo(LPMINMAXINFO lpMinMaxInfo);
-	LPARAM OnNotify(int idCtrl, LPNMHDR lpNmhdr);
+	BOOL OnNotify(int idCtrl, LPNMHDR lpNmhdr);
 	void OnSize(int cx, int cy, INT_PTR flags);
 
 	void OnFileRunWow();
@@ -63,7 +63,7 @@ protected:
 
 	friend BOOL MainDlgProc(HWND, UINT, WPARAM, LPARAM);
 
-	void AddServerToListView(stServer* server);
+	void AddServerToListView(const stServer& server);
 	void LoadLocaleText();
 	void LoadSettings();
 	void FillServerListView();

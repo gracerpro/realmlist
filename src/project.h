@@ -95,7 +95,7 @@ public:
 
 	// sets server.status
 	// @return "online" or "offline"
-	static AppString GetServerStatus(stServer* pServer);
+	static ServerStatus GetServerStatus(const stServer& server);
 	static AppString GetServerStatusName(ServerStatus status);
 
 	eWowVersion GetWowVersion() const;

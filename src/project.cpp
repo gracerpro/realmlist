@@ -21,6 +21,7 @@
 #include <fstream>
 #include <iostream>
 #include <fstream>
+#include <algorithm>
 #include <WinVer.h>
 #include <winsock.h>
 
@@ -36,7 +37,7 @@ bool WowClient::AddClientDir(const AppString szClientDir) {
 	if (szClientDir.empty()) {
 		return false;
 	}
-	if (m_clientDirList.end() != std::find(m_clientDirList.begin(), m_clientDirList.end(), szClientDir)) {
+	if (std::find(m_clientDirList.begin(), m_clientDirList.end(), szClientDir) != m_clientDirList.end()) {
 		return false;
 	}
 	if (!IsDir(szClientDir.c_str())) {
@@ -74,7 +75,7 @@ const TCHAR* WowClient::GetRealmlistFilePath() const {
 	static TCHAR fileName[MAX_PATH];
 
 	GetExeDir(fileName);
-	_tcscat_s(fileName, MAX_PATH, TEXT("realmlist.txt"));
+	_tcscat(fileName, TEXT("realmlist.txt"));
 
 	return fileName;
 }
@@ -83,15 +84,17 @@ const TCHAR* WowClient::GetClientDirFilePath() const {
 	static TCHAR fileName[MAX_PATH];
 
 	GetExeDir(fileName);
-	_tcscat_s(fileName, MAX_PATH, TEXT("clientdir.txt"));
+	_tcscat(fileName, TEXT("clientdir.txt"));
 
 	return fileName;
 }
 
 void WowClient::SaveServer() {
-	std::basic_ofstream<TCHAR> ostream(GetRealmlistFilePath(), std::ios_base::out | std::ios_base::trunc);
+	std::basic_fstream<TCHAR> stream;
 
-	if (!ostream.is_open()) {
+	std::string fileName = ToString(GetRealmlistFilePath());
+	stream.open(fileName, std::ios_base::out | std::ios_base::trunc);
+	if (!stream.is_open()) {
 		return;
 	}
 
@@ -99,14 +102,15 @@ void WowClient::SaveServer() {
 	for ( ; iter != m_serverList.end(); ++iter) {
 		const stServer& server = *iter;
 
-		ostream << server.address << ';' << server.description << '\n';
+		stream << server.address << ';' << server.description << '\n';
 	}
 
-	ostream.close();
+	stream.close();
 }
 
 void WowClient::SaveClientDirList() {
-	std::basic_ofstream<TCHAR> ostream(GetClientDirFilePath(), std::ios_base::out | std::ios_base::trunc);
+	std::string fileName = ToString(GetClientDirFilePath());
+	std::basic_ofstream<TCHAR> ostream(fileName, std::ios_base::out | std::ios_base::trunc);
 
 	if (!ostream.is_open()) {
 		return;
@@ -123,7 +127,8 @@ void WowClient::SaveClientDirList() {
 }
 
 ServerList& WowClient::LoadServers() {
-	std::basic_ifstream<TCHAR> stream(GetRealmlistFilePath());
+	std::string fileName = ToString(GetRealmlistFilePath());
+	std::basic_ifstream<TCHAR> stream(fileName, std::ios::in);
 
 	m_serverList.clear();
 
@@ -145,7 +150,7 @@ ServerList& WowClient::LoadServers() {
 		stream.close();
 	}
 	else {
-		std::basic_ofstream<TCHAR> ostream(GetRealmlistFilePath(), std::ios_base::out | std::ios_base::trunc);
+		std::basic_ofstream<TCHAR> ostream(fileName, std::ios_base::out | std::ios_base::trunc);
 		if (ostream.is_open()) {
 			ostream.close();
 		}
@@ -155,7 +160,8 @@ ServerList& WowClient::LoadServers() {
 }
 
 size_t WowClient::LoadClientDirList() {
-	std::basic_ifstream<TCHAR> stream(GetClientDirFilePath());
+	std::string fileName = ToString(GetClientDirFilePath());
+	std::basic_ifstream<TCHAR> stream(fileName, std::ios::in);
 
 	if (stream.is_open()) {
 		TCHAR line[1024];
@@ -166,7 +172,7 @@ size_t WowClient::LoadClientDirList() {
 		stream.close();
 	}
 	else {
-		std::basic_ofstream<TCHAR> ostream(GetRealmlistFilePath(), std::ios_base::out | std::ios_base::trunc);
+		std::basic_ofstream<TCHAR> ostream(fileName, std::ios_base::out | std::ios_base::trunc);
 		if (ostream.is_open()) {
 			ostream.close();
 		}
@@ -186,7 +192,7 @@ bool WowClient::AddServer(const stServer& server) {
 }
 
 bool WowClient::DelServer(const AppString& server) {
-	ServerList::const_iterator findIter = std::find(m_serverList.begin(), m_serverList.end(), server);
+	ServerList::iterator findIter = std::find(m_serverList.begin(), m_serverList.end(), server);
 	if (findIter == m_serverList.end()) {
 		return false;
 	}
@@ -229,7 +235,8 @@ eWowVersion WowClient::GetWowVersion() const {
 	eWowVersion res = WOW_VERSION_NULL;
 
 	AppString exeFile = m_clientDirList[m_selectedClientDirIndex] + TEXT("WoW.exe");
-	std::basic_ifstream<TCHAR> stream(exeFile.c_str(), std::ios::binary | std::ios::ate);
+	std::string fileName = ToString(exeFile);
+	std::basic_ifstream<TCHAR> stream(fileName, std::ios::binary | std::ios::ate);
 	if (stream.is_open()) {
 		std::streamoff size = stream.tellg();
 		stream.close();
@@ -259,7 +266,8 @@ eWowVersion WowClient::GetWowVersion() const {
 }
 
 static void WriteRealmlistToFile(AppString fileName, AppString& realmlistData) {
-	std::basic_ofstream<TCHAR> stream(fileName.c_str(), std::ios::out | std::ios::trunc);
+	std::string fileName2 = ToString(fileName);
+	std::basic_ofstream<TCHAR> stream(fileName2, std::ios::out | std::ios::trunc);
 	if (stream.is_open()) {
 		stream << realmlistData;
 		stream.close();
@@ -328,7 +336,8 @@ void WowClient::Save() {
 }
 
 static AppString GetServerAddrFromFile(AppString& file) {
-	std::basic_ifstream<TCHAR> stream(file, std::ios::in);
+	std::string fileName = ToString(file);
+	std::basic_ifstream<TCHAR> stream(fileName, std::ios::in);
 	AppString res;
 
 	if (stream.good()) {
@@ -393,29 +402,23 @@ AppString WowClient::GetServerStatusName(ServerStatus status) {
 	return statusName;
 }
 
-AppString WowClient::GetServerStatus(stServer* pServer) {
+ServerStatus WowClient::GetServerStatus(const stServer& server) {
 	ServerStatus status = ServerStatusOffline;
-
-	pServer->status = ServerStatusOffline;
 
 	SOCKET s = socket(AF_INET, SOCK_STREAM, 0);
 	if (s == SOCKET_ERROR) {
-		return GetServerStatusName(status);
+		return status;
 	}
 
 	const char* host;
 #ifdef UNICODE
-	char szAddress[255];
-	const wchar_t* wszAddress = pServer->address.c_str();
-	mbstate_t state;
-	size_t convertRetVal;
-	wcsrtombs_s(&convertRetVal, szAddress, &wszAddress, sizeof(szAddress), &state);
-	host = szAddress;
+	std::string sAddress = ToString(server.address);
+	host = sAddress.c_str();
 #else
 	host = serverAddr.c_str();
 #endif
 	u_long address = inet_addr(host);
-	
+
 	if (address == INADDR_NONE) {
 		hostent* pHostent = gethostbyname(host);
 		if (pHostent) {
@@ -436,9 +439,7 @@ AppString WowClient::GetServerStatus(stServer* pServer) {
 
 	closesocket(s);
 
-	pServer->status = status;
-
-	return GetServerStatusName(status);
+	return status;
 }
 
 const stServer* WowClient::Servers(size_t index) const {
