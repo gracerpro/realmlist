@@ -106,7 +106,7 @@ public:
 	const ClientDirList& GetClientPathList() const { return m_clientDirList; };
 	size_t GetClientDirCount() const { return m_clientDirList.size(); };
 
-	const ServerList& GetServerList() const { return m_serverList; };
+	ServerList& GetServerList() { return m_serverList; };
 
 	const LocaleServerList& GetLocaleServerList() const { return m_LocaleServerList; };
 	const size_t GetLocaleServerCount() const { return m_LocaleServerList.size(); };

@@ -32,7 +32,7 @@ public:
 
 	int MessageBox(const TCHAR* message, int flags = MB_ICONINFORMATION);
 
-	const WowClient& GetProject() const { return m_project; };
+	WowClient& GetProject()  { return m_project; };
 
 protected:
 	void OnCommand(int id, int notifyCode, HWND hwndFrom);
@@ -68,17 +68,6 @@ protected:
 	void LoadSettings();
 	void FillServerListView();
 	void RetrieveServersStatus();
-/*void MainWindow::RetrieveServersStatus() {
-	ServerList ServerList = m_project.GetServerList();
-	HWND hLviServer = GetDlgItem(m_hWnd, IDC_LSV_SERVER);
-
-	for (size_t i = 0; i < ServerList.size(); ++i) {
-		stServer& server = ServerList[i];
-		AppString statusName = WowClient::GetServerStatus(&server);
-		ListView_SetItemText(hLviServer, i, 2, const_cast<LPWSTR>(statusName.c_str()));
-	}
-}
-	*/
 	void SetDlgItemLocaleText(const char* message, UINT controlId, const char* defaultText = NULL);
 	void SetLocale(ApplicationLocale locale, bool bUserSelect);
 

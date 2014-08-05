@@ -158,10 +158,14 @@ static LONG OnCustumDraw(NMHDR* nmHdr) {
 	case CDDS_ITEMPREPAINT:
 		COLORREF backColor;
 		backColor = RGB(255, 255, 255);
+		ServerList& serverList = g_MainWindow->GetProject().GetServerList();
 		const stServer* pServer = g_MainWindow->GetProject().Servers(nmlvcd->nmcd.dwItemSpec);
 		if (pServer) {
-			if (pServer->status == ServerStatusOffline) {
+			if (pServer->status == ServerStatusOnline) {
 				backColor = RGB(100, 255, 100);
+			}
+			if (pServer->status == ServerStatusOffline) {
+				backColor = RGB(0xFA, 0xB2, 0xB0);
 			}
 		}
 		nmlvcd->clrTextBk = backColor;
@@ -282,12 +286,41 @@ void MainWindow::InitListviews() {
 	SendMessage(hwndLviClient, LVM_SETEXTENDEDLISTVIEWSTYLE, 0, LVS_EX_FULLROWSELECT | LVS_EX_SINGLEROW);
 }
 
+static DWORD WINAPI RetrieveServersStatusThread(LPVOID param) {
+	ServerList& serverList = g_MainWindow->GetProject().GetServerList();
+	HWND hwndLviServer = GetDlgItem(g_MainWindow->GetWnd(), IDC_LSV_SERVER);
+
+	int i = 0;
+	ServerList::iterator iter = serverList.begin();
+	for (; iter != serverList.end(); ++iter) {
+		stServer& server = *iter;
+		ServerStatus status = WowClient::GetServerStatus(server);
+		AppString statusName = WowClient::GetServerStatusName(status);
+		LPWSTR pStatusName = const_cast<LPWSTR>(statusName.c_str());
+		server.status = status;
+		ListView_SetItemText(hwndLviServer, i, 2, pStatusName);
+		SendMessage(hwndLviServer, LVM_REDRAWITEMS, i, i);
+		++i;
+		Sleep(1000);
+	}
+
+	ExitThread(0);
+	return 0;
+}
+
 void MainWindow::FillServerListView() {
-	ServerList& ServerList = m_project.LoadServers();
-	for (size_t i = 0; i < ServerList.size(); ++i) {
-		stServer& server = ServerList[i];
+	const ServerList& serverList = m_project.LoadServers();
+	ServerList::const_iterator iter = serverList.begin();
+	for (; iter != serverList.end(); ++iter) {
+		const stServer& server = *iter;
 		AddServerToListView(server);
 	}
+}
+
+void MainWindow::RetrieveServersStatus() {
+	//static eventRetrieveServerStatus =
+	DWORD dw = 0;
+	CreateThread(NULL, 0, RetrieveServersStatusThread, 0, 0, &dw);
 }
 
 void MainWindow::OnInitDialog(LPARAM param) {
@@ -301,6 +334,7 @@ void MainWindow::OnInitDialog(LPARAM param) {
 	SetLocale(locale, false);
 
 	FillServerListView();
+	RetrieveServersStatus();
 
 	m_project.LoadClientDirList();
 	ClientDirList list = m_project.GetClientPathList();
@@ -745,7 +779,7 @@ void MainWindow::AddServerToListView(const stServer& server) {
 	HWND hwndLvi = GetDlgItem(m_hWnd, IDC_LSV_SERVER);
 	LV_ITEM item = {0};
 
-	// For DEBUG:
+	// DEBUG:
 	// ServerStatus status = rand() % 2 == 0 ? ServerStatusOffline : ServerStatusOnline;
 	// AppString statusName = WowClient::GetServerStatusName(status);
 	// server->status = status;
@@ -756,8 +790,7 @@ void MainWindow::AddServerToListView(const stServer& server) {
 	LRESULT index = ListView_InsertItem(hwndLvi, &item);
 	TCHAR* pDescr = const_cast<TCHAR*>(server.description.c_str());
 	ListView_SetItemText(hwndLvi, index, 1, pDescr);
-	ServerStatus status = WowClient::GetServerStatus(server);
-	AppString statusName = WowClient::GetServerStatusName(status);
+	AppString statusName = WowClient::GetServerStatusName(ServerStatusOffline);
 	TCHAR* pStatusName = const_cast<TCHAR*>(statusName.c_str());
 	ListView_SetItemText(hwndLvi, index, 2, pStatusName);
 }
